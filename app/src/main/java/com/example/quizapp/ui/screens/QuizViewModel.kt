@@ -19,17 +19,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.quizapp.QuizApplication
 import com.example.quizapp.data.QuizApiRepository
 import com.example.quizapp.model.StudySet
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import javax.inject.Inject
 
 /**
  * UI state for the Home screen
@@ -40,7 +37,9 @@ sealed interface QuizUiState {
     object Loading : QuizUiState
 }
 
-class QuizViewModel(private val quizApiRepository: QuizApiRepository) : ViewModel() {
+@HiltViewModel
+class QuizViewModel @Inject constructor(private val quizApiRepository: QuizApiRepository) :
+    ViewModel() {
     /** The mutable State that stores the status of the most recent request */
     var quizUiState: QuizUiState by mutableStateOf(QuizUiState.Loading)
         private set
@@ -65,19 +64,6 @@ class QuizViewModel(private val quizApiRepository: QuizApiRepository) : ViewMode
                 QuizUiState.Error
             } catch (e: HttpException) {
                 QuizUiState.Error
-            }
-        }
-    }
-
-    /**
-     * Factory for [QuizViewModel] that takes [QuizApiRepository] as a dependency
-     */
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val application = (this[APPLICATION_KEY] as QuizApplication)
-                val quizAppRepository = application.container.quizApiRepository
-                QuizViewModel(quizApiRepository = quizAppRepository)
             }
         }
     }

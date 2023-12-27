@@ -23,9 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.quizapp.ui.screens.HomeScreen
-import com.example.quizapp.ui.screens.QuizViewModel
 
 
 @Composable
@@ -36,9 +33,8 @@ fun QuizApp() {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        val quizViewModel: QuizViewModel =
-            viewModel(factory = QuizViewModel.Factory)
-        HomeScreen(quizUiState = quizViewModel.quizUiState)
+//        val quizViewModel: QuizViewModel = viewModel()
+//        HomeScreen(quizUiState = quizViewModel.quizUiState)
     }
 
 }

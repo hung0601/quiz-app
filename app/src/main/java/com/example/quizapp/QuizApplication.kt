@@ -16,14 +16,9 @@
 package com.example.quizapp
 
 import android.app.Application
-import com.example.quizapp.data.AppContainer
-import com.example.quizapp.data.DefaultAppContainer
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class QuizApplication : Application() {
     /** AppContainer instance used by the rest of classes to obtain dependencies */
-    lateinit var container: AppContainer
-    override fun onCreate() {
-        super.onCreate()
-        container = DefaultAppContainer()
-    }
 }
