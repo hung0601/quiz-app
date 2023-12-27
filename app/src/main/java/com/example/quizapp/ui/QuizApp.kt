@@ -25,22 +25,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quizapp.ui.screens.HomeScreen
-import com.example.quizapp.ui.screens.MarsViewModel
-
+import com.example.quizapp.ui.screens.QuizViewModel
 
 
 @Composable
 fun QuizApp() {
     //val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            val marsViewModel: MarsViewModel =
-                viewModel(factory = MarsViewModel.Factory)
-            HomeScreen(quizUiState = marsViewModel.quizUiState)
-        }
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        val quizViewModel: QuizViewModel =
+            viewModel(factory = QuizViewModel.Factory)
+        HomeScreen(quizUiState = quizViewModel.quizUiState)
+    }
 
 }
 

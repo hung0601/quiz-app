@@ -40,7 +40,7 @@ sealed interface QuizUiState {
     object Loading : QuizUiState
 }
 
-class MarsViewModel(private val quizApiRepository: QuizApiRepository) : ViewModel() {
+class QuizViewModel(private val quizApiRepository: QuizApiRepository) : ViewModel() {
     /** The mutable State that stores the status of the most recent request */
     var quizUiState: QuizUiState by mutableStateOf(QuizUiState.Loading)
         private set
@@ -70,14 +70,14 @@ class MarsViewModel(private val quizApiRepository: QuizApiRepository) : ViewMode
     }
 
     /**
-     * Factory for [MarsViewModel] that takes [QuizApiRepository] as a dependency
+     * Factory for [QuizViewModel] that takes [QuizApiRepository] as a dependency
      */
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as QuizApplication)
-                val quizappRepository = application.container.quizApiRepository
-                MarsViewModel(quizApiRepository = quizappRepository)
+                val quizAppRepository = application.container.quizApiRepository
+                QuizViewModel(quizApiRepository = quizAppRepository)
             }
         }
     }

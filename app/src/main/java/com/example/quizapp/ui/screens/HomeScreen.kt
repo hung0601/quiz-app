@@ -71,10 +71,13 @@ enum class QuizScreen(val title: String) {
     QuizDetail(title = "Quiz detail"),
     QuizLearn(title = "Study"),
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    quizUiState: QuizUiState, navController: NavHostController = rememberNavController(), modifier: Modifier = Modifier
+    quizUiState: QuizUiState,
+    navController: NavHostController = rememberNavController(),
+    modifier: Modifier = Modifier
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = QuizScreen.valueOf(
@@ -90,15 +93,27 @@ fun HomeScreen(
         }
     ) { innerPadding ->
         when (quizUiState) {
-            is QuizUiState.Loading -> LoadingScreen( modifier = modifier)
-            is QuizUiState.Success -> NavigationHost(studySets = quizUiState.studySets,navController= navController, innerPadding = innerPadding,modifier= modifier)
+            is QuizUiState.Loading -> LoadingScreen(modifier = modifier)
+            is QuizUiState.Success -> NavigationHost(
+                studySets = quizUiState.studySets,
+                navController = navController,
+                innerPadding = innerPadding,
+                modifier = modifier
+            )
+
             else -> ErrorScreen(modifier = modifier)
         }
     }
 }
 
 @Composable
-fun NavigationHost(viewModel: TermViewModel = viewModel(), studySets: List<StudySet>, navController: NavHostController, innerPadding: PaddingValues, modifier: Modifier = Modifier){
+fun NavigationHost(
+    viewModel: TermViewModel = viewModel(),
+    studySets: List<StudySet>,
+    navController: NavHostController,
+    innerPadding: PaddingValues,
+    modifier: Modifier = Modifier
+) {
 
     val uiState by viewModel.uiState.collectAsState()
     NavHost(
@@ -107,20 +122,23 @@ fun NavigationHost(viewModel: TermViewModel = viewModel(), studySets: List<Study
         modifier = Modifier.padding(innerPadding)
     ) {
         composable(route = QuizScreen.Home.name) {
-            StudySetListScreen(studySets= studySets,
+            StudySetListScreen(
+                studySets = studySets,
                 onTermCardClicked = {
                     viewModel.setCurrentSet(it)
                     navController.navigate(QuizScreen.QuizDetail.name)
-            }, modifier=modifier)
+                }, modifier = modifier
+            )
         }
         composable(route = QuizScreen.QuizDetail.name) {
-            TermDetail(uiState.currentSet!!,navController)
+            TermDetail(uiState.currentSet!!, navController)
         }
         composable(route = QuizScreen.QuizLearn.name) {
             QuizStudyScreen(studySet = uiState.currentSet!!)
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizAppBar(
@@ -130,7 +148,7 @@ fun QuizAppBar(
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
-        title = {Text(text = currentScreen.title)},
+        title = { Text(text = currentScreen.title) },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
@@ -147,31 +165,40 @@ fun QuizAppBar(
         }
     )
 }
+
 @Composable
-fun StudySetListScreen(studySets: List<StudySet>,onTermCardClicked:(studySet: StudySet) -> Unit ,modifier: Modifier = Modifier) {
+fun StudySetListScreen(
+    studySets: List<StudySet>,
+    onTermCardClicked: (studySet: StudySet) -> Unit,
+    modifier: Modifier = Modifier
+) {
     LazyColumn() {
         items(studySets) {
             StudySetCard(
                 studySet = it,
-                onTermCardClicked=onTermCardClicked,
+                onTermCardClicked = onTermCardClicked,
                 modifier = Modifier
                     .padding(4.dp)
             )
 
         }
     }
-   
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudySetCard(studySet: StudySet,onTermCardClicked:(studySet: StudySet) -> Unit , modifier: Modifier = Modifier) {
+fun StudySetCard(
+    studySet: StudySet,
+    onTermCardClicked: (studySet: StudySet) -> Unit,
+    modifier: Modifier = Modifier
+) {
     OutlinedCard(
-        onClick = { onTermCardClicked(studySet)},
-        modifier= modifier
-    )  {
+        onClick = { onTermCardClicked(studySet) },
+        modifier = modifier
+    ) {
         Row {
-            if(studySet.imageUrl.isNotEmpty()) {
+            if (studySet.imageUrl.isNotEmpty()) {
                 AsyncImage(
                     model = studySet.imageUrl,
                     contentDescription = null,
@@ -181,17 +208,25 @@ fun StudySetCard(studySet: StudySet,onTermCardClicked:(studySet: StudySet) -> Un
                     contentScale = ContentScale.Crop,
                 )
             }
-            Column(modifier = Modifier
-                .padding(4.dp)
-                .height(110.dp)
-                .fillMaxWidth()) {
-                Text(text = studySet.title, style = TextStyle(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
-                ))
+            Column(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .height(110.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = studySet.title, style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
                 Text(text = studySet.description)
-                Row(modifier=Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.Bottom) {
-                    Text(text = studySet.terms.size.toString()+" thuật ngữ", color = Color.Blue)
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(text = studySet.terms.size.toString() + " thuật ngữ", color = Color.Blue)
                 }
             }
 

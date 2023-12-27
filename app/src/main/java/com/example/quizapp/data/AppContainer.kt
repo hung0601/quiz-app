@@ -15,13 +15,11 @@
  */
 package com.example.quizapp.data
 
-import com.example.quizapp.data.NetworkQuizApiRepository
-import com.example.quizapp.data.QuizApiRepository
 import com.example.quizapp.network.QuizApiService
-import retrofit2.Retrofit
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import retrofit2.Retrofit
 
 /**
  * Dependency Injection container at the application level.
@@ -36,7 +34,7 @@ interface AppContainer {
  * Variables are initialized lazily and the same instance is shared across the whole app.
  */
 class DefaultAppContainer : AppContainer {
-    private val baseUrl = "http://10.0.2.2:8000/api/"
+    private val baseUrl = "http://192.168.1.7:8000/api/"
 
     /**
      * Use the Retrofit builder to build a retrofit object using a kotlinx.serialization converter
