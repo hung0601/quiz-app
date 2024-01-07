@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.screens.termdetail
+package com.example.quizapp.ui.screens.set_detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,19 +28,39 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
-import com.example.quizapp.model.StudySet
+import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
-import com.example.quizapp.ui.screens.QuizScreen
+import com.example.quizapp.ui.screens.hooks.ErrorScreen
+import com.example.quizapp.ui.screens.hooks.LoadingScreen
 
 @Composable
-fun TermDetail(studySet: StudySet, navController: NavHostController) {
+fun SetDetailScreen(
+    setDetailModel: SetDetailModel,
+    onClickStudy: () -> Unit,
+    navController: NavHostController
+) {
+    //val setDetailModel = navBackStackEntry.sharedViewModel<SetDetailModel>(navController)
+    //setDetailModel: SetDetailModel,
+    val studySetUiState: StudySetUiState = setDetailModel.uiState
+
+    when (studySetUiState) {
+        is StudySetUiState.Loading -> LoadingScreen(modifier = Modifier)
+        is StudySetUiState.Success -> DetailScreen(studySetUiState.studySet, onClickStudy)
+        else -> ErrorScreen(modifier = Modifier)
+    }
+
+
+}
+
+@Composable
+fun DetailScreen(studySet: StudySetDetail, onClickStudy: () -> Unit) {
     Column(modifier = Modifier.padding(8.dp)) {
 
         AsyncImage(
             model = studySet.imageUrl,
             contentDescription = null,
             modifier = Modifier
-                .height(160.dp)
+                .height(200.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp)),
             contentScale = ContentScale.Crop,
@@ -83,17 +103,32 @@ fun TermDetail(studySet: StudySet, navController: NavHostController) {
             }
         }
 
-        Divider(modifier = Modifier.padding(bottom = 10.dp), thickness = 1.dp, color = Color.Gray)
-        Row(horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()) {
-            Button(onClick = { /*TODO*/ }) {
-                Text(text = "Cancel")
-            }
-            Button(onClick = { navController.navigate(QuizScreen.QuizLearn.name) }) {
-                Text(text = "Study")
+        Divider(modifier = Modifier.padding(bottom = 0.dp), thickness = 1.dp, color = Color.Gray)
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth()
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier
+                    .fillMaxWidth()
+
+            ) {
+                Button(onClick = {}) {
+                    Text(text = "Cancel")
+                }
+                Button(onClick = { onClickStudy() }) {
+                    Text(text = "Study")
+                }
             }
         }
-    }
 
+
+    }
 }
 
 @Composable
@@ -124,3 +159,4 @@ fun TermItem(term: Term) {
         }
     }
 }
+

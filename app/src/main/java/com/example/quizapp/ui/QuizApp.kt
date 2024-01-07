@@ -14,28 +14,31 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.example.quizapp.ui
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
+import com.example.quizapp.ui.navigation.nav_graph.SetupNavGraph
+import com.example.quizapp.ui.screens.BottomBar
+import com.example.quizapp.ui.screens.QuizAppTopBar
 
 
 @Composable
 fun QuizApp() {
-    //val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
+    val navController = rememberNavController()
+    Scaffold(
+        topBar = {
+            QuizAppTopBar(navController = navController)
+        },
+        bottomBar = { BottomBar(navController = navController) }
     ) {
-//        val quizViewModel: QuizViewModel = viewModel()
-//        HomeScreen(quizUiState = quizViewModel.quizUiState)
+        SetupNavGraph(navController = navController, modifier = Modifier.padding(it))
     }
+
 
 }
 

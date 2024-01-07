@@ -1,7 +1,8 @@
 package com.example.quizapp.di
 
-import com.example.quizapp.data.NetworkQuizApiRepository
-import com.example.quizapp.data.QuizApiRepository
+import com.example.quizapp.data.session.SessionCache
+import com.example.quizapp.network.NetworkQuizApiRepository
+import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.QuizApiService
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
@@ -10,6 +11,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
@@ -20,12 +22,27 @@ class NetworkModule {
 
     @Singleton
     @Provides
-    fun provideRetrofit(): Retrofit {
+    fun provideRetrofit(sessionCache: SessionCache): Retrofit {
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val original = chain.request()
+                val bearerToken = sessionCache.getActiveSession()?.token ?: ""
+                val builder = original.newBuilder()
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer $bearerToken")
+                val request = builder.build()
+                chain.proceed(request)
+            }
+            .build()
         return Retrofit.Builder()
-            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(Json {
+                ignoreUnknownKeys = true
+            }.asConverterFactory("application/json".toMediaType()))
             .baseUrl("http://192.168.1.7:8000/api/")
+            .client((httpClient))
             .build()
     }
+
 
     @Singleton
     @Provides

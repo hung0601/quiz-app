@@ -16,8 +16,16 @@
 
 package com.example.quizapp.network
 
+import com.example.quizapp.model.Course
 import com.example.quizapp.model.StudySet
+import com.example.quizapp.model.StudySetDetail
+import com.example.quizapp.model.Token
+import retrofit2.Response
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Path
 
 /**
  * A public interface that exposes the [getStudySets] method
@@ -28,6 +36,20 @@ interface QuizApiService {
      * The @GET annotation indicates that the "photos" endpoint will be requested with the GET
      * HTTP method
      */
+    @FormUrlEncoded
+    @POST("login")
+    suspend fun login(
+        @Field("email") email: String,
+        @Field("password") password: String
+    ): Response<Token>
+
+    @GET("courses")
+    suspend fun getCourses(): Response<List<Course>>
+
     @GET("study_sets")
-    suspend fun getStudySets(): List<StudySet>
+    suspend fun getStudySets(): Response<List<StudySet>>
+
+    @GET("study_sets/{id}")
+    suspend fun getStudySet(@Path("id") setId: Int): Response<StudySetDetail>
+
 }

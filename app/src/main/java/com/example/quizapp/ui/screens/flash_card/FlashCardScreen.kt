@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.screens.quizstudy
+package com.example.quizapp.ui.screens.flash_card
 
 
 import androidx.compose.animation.AnimatedContent
@@ -12,6 +12,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,19 +50,18 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.quizapp.data.StudyUiState
-import com.example.quizapp.model.StudySet
+import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun QuizStudyScreen(studyViewModel: QuizStudyModel = viewModel(), studySet: StudySet) {
-    val uiState by studyViewModel.uiState.collectAsState()
+fun FlashCardScreen(studySet: StudySetDetail) {
+    val flashCardModel = hiltViewModel<FlashCardModel>()
+    val uiState by flashCardModel.uiState.collectAsState()
     val color1 = Color(0xfff6f7fb)
     Row(
         modifier = Modifier
@@ -96,7 +96,7 @@ fun QuizStudyScreen(studyViewModel: QuizStudyModel = viewModel(), studySet: Stud
             ) {
                 it
                 FlipCard(term = studySet.terms[it],
-                    studyViewModel = studyViewModel,
+                    flashCardModel = flashCardModel,
                     uiState = uiState,
                     onCardClick = {})
             }
@@ -110,7 +110,7 @@ fun QuizStudyScreen(studyViewModel: QuizStudyModel = viewModel(), studySet: Stud
 
             ) {
                 IconButton(onClick = {
-                    studyViewModel.setCurrentTerm(
+                    flashCardModel.setCurrentTerm(
                         getPrevTerm(
                             studySet.terms,
                             uiState.currentTerm
@@ -120,7 +120,7 @@ fun QuizStudyScreen(studyViewModel: QuizStudyModel = viewModel(), studySet: Stud
                     Icon(Icons.Outlined.ArrowBack, contentDescription = "Back button")
                 }
                 IconButton(onClick = {
-                    studyViewModel.setCurrentTerm(
+                    flashCardModel.setCurrentTerm(
                         getNextTerm(
                             studySet.terms,
                             uiState.currentTerm
@@ -139,8 +139,8 @@ fun QuizStudyScreen(studyViewModel: QuizStudyModel = viewModel(), studySet: Stud
 @Composable
 fun FlipCard(
     term: Term,
-    studyViewModel: QuizStudyModel,
-    uiState: StudyUiState,
+    flashCardModel: FlashCardModel,
+    uiState: FlashCardUiState,
     onCardClick: () -> Unit,
 ) {
 
@@ -167,17 +167,21 @@ fun FlipCard(
 
 
     ElevatedCard(
-        onClick = {
-            studyViewModel.toggleOpen()
-            onCardClick()
-            rotated = !rotated
-        },
         colors = CardDefaults.cardColors(
             containerColor = Color(0xffffffff),
         ),
         modifier = Modifier
             .fillMaxSize()
             .padding(5.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {
+                    flashCardModel.toggleOpen()
+                    onCardClick()
+                    rotated = !rotated
+                }
+            )
             .graphicsLayer {
                 rotationY = rotation
                 cameraDistance = 8 * density
@@ -185,28 +189,27 @@ fun FlipCard(
 
     )
     {
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp)
-            .graphicsLayer {
-                alpha = if (rotated) animateBack else animateFront
-                rotationY = rotation
-            },
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
+                .graphicsLayer {
+                    alpha = if (rotated) animateBack else animateFront
+                    rotationY = rotation
+                },
         ) {
             var isLike by rememberSaveable {
                 mutableStateOf(false)
             }
-            Box(contentAlignment = Alignment.TopEnd, modifier = Modifier.fillMaxWidth()){
+            Box(contentAlignment = Alignment.TopEnd, modifier = Modifier.fillMaxWidth()) {
                 Icon(
                     if (isLike) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     contentDescription = null,
                     tint = Color(0xffE35454),
-                    modifier = Modifier.
-
-                    clickable { isLike = !isLike }
+                    modifier = Modifier.clickable { isLike = !isLike }
                 )
             }
-            if(!rotated) {
+            if (!rotated) {
                 Icon(
                     Icons.Outlined.PlayArrow,
                     contentDescription = null,
@@ -283,51 +286,3 @@ fun getPrevTerm(terms: List<Term>, currentIndex: Int): Int {
     else terms.size - 1
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun QuizStudyPreview() {
-    val listTerm: List<Term> = listOf(
-        Term(
-            1,
-            "tiger",
-            "Con ho",
-            1,
-            "https://thumbs.dreamstime.com/b/tiger-portrait-horizontal-11392212.jpg",
-            null,
-            null
-        ),
-        Term(
-            2,
-            "lion",
-            "Con su tu",
-            1,
-            "https://wallpapers.com/images/hd/lion-pictures-snw3r6217skr1ni5.jpg",
-            null,
-            null
-        ),
-        Term(
-            1,
-            "tiger",
-            "Con ho",
-            1,
-            "https://thumbs.dreamstime.com/b/tiger-portrait-horizontal-11392212.jpg",
-            null,
-            null
-        ),
-    )
-
-    QuizStudyScreen(
-        studySet = StudySet(
-            1,
-            "test",
-            "none",
-            listTerm,
-            "https://outdoorswire.usatoday.com/wp-content/uploads/sites/114/2023/07/pexels-marik-elikishvili-4224300.jpg",
-            null,
-            null
-        ),
-    )
-
-
-}

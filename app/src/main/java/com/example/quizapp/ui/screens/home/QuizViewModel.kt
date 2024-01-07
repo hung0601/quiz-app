@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.quizapp.ui.screens
+package com.example.quizapp.ui.screens.home
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.quizapp.data.QuizApiRepository
 import com.example.quizapp.model.StudySet
+import com.example.quizapp.network.QuizApiRepository
+import com.example.quizapp.network.response_model.ApiResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -58,13 +57,22 @@ class QuizViewModel @Inject constructor(private val quizApiRepository: QuizApiRe
     fun getStudySets() {
         viewModelScope.launch {
             quizUiState = QuizUiState.Loading
-            quizUiState = try {
-                QuizUiState.Success(quizApiRepository.getStudySets())
-            } catch (e: IOException) {
-                QuizUiState.Error
-            } catch (e: HttpException) {
-                QuizUiState.Error
+            val response = quizApiRepository.getStudySets()
+            quizUiState = when (response) {
+                is ApiResponse.Success -> {
+                    QuizUiState.Success(response.data)
+                }
+
+                is ApiResponse.Error -> {
+                    QuizUiState.Error
+                }
+
+                else -> {
+                    QuizUiState.Error
+                }
             }
+
+
         }
     }
 }
