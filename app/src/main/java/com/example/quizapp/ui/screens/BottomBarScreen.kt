@@ -6,8 +6,9 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,16 +31,22 @@ sealed class BottomBarScreen(
         icon = Icons.Default.Home
     )
 
+    object Search : BottomBarScreen(
+        route = Screen.Search.route,
+        title = "Search",
+        icon = Icons.Default.Search
+    )
+
+    object Library : BottomBarScreen(
+        route = "library",
+        title = "Library",
+        icon = Icons.Default.LibraryAdd
+    )
+
     object Profile : BottomBarScreen(
         route = Screen.Profile.route,
         title = "Profile",
         icon = Icons.Default.Person
-    )
-
-    object Settings : BottomBarScreen(
-        route = "settings",
-        title = "Settings",
-        icon = Icons.Default.Settings
     )
 }
 
@@ -47,8 +54,9 @@ sealed class BottomBarScreen(
 fun BottomBar(navController: NavHostController) {
     val screens = listOf(
         BottomBarScreen.Home,
+        BottomBarScreen.Search,
+        BottomBarScreen.Library,
         BottomBarScreen.Profile,
-        BottomBarScreen.Settings,
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination

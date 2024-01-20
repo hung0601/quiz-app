@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     readOnly: Boolean = false,
     label: @Composable() (() -> Unit)? = null,

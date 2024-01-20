@@ -17,15 +17,23 @@
 package com.example.quizapp.network
 
 import com.example.quizapp.model.Course
+import com.example.quizapp.model.CourseDetail
+import com.example.quizapp.model.CourseInvite
+import com.example.quizapp.model.Profile
+import com.example.quizapp.model.Search
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.model.StudySetDetail
+import com.example.quizapp.model.Term
 import com.example.quizapp.model.Token
+import okhttp3.RequestBody
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  * A public interface that exposes the [getStudySets] method
@@ -43,13 +51,74 @@ interface QuizApiService {
         @Field("password") password: String
     ): Response<Token>
 
+
+    @GET("user/top_creators")
+    suspend fun getTopCreators(): Response<List<Profile>>
+
     @GET("courses")
     suspend fun getCourses(): Response<List<Course>>
 
     @GET("study_sets")
     suspend fun getStudySets(): Response<List<StudySet>>
 
+    @GET("study_sets/created_sets")
+    suspend fun getCreatedSets(): Response<List<StudySet>>
+
     @GET("study_sets/{id}")
     suspend fun getStudySet(@Path("id") setId: Int): Response<StudySetDetail>
 
+    @GET("courses/{id}")
+    suspend fun getCourse(@Path("id") setId: Int): Response<CourseDetail>
+
+    @FormUrlEncoded
+    @POST("courses")
+    suspend fun createCourse(
+        @Field("title") title: String,
+        @Field("description") description: String
+    ): Response<Course>
+
+
+    @POST("study_sets")
+    suspend fun createSet(@Body body: RequestBody): Response<StudySet>
+
+    @POST("terms")
+    suspend fun addTerm(@Body body: RequestBody): Response<Term>
+
+    @FormUrlEncoded
+    @POST("courses/add_study_set")
+    suspend fun addStudySets(
+        @Field("course_id") courseId: Int,
+        @Field("study_set_ids[]") studySetIds: List<Int>
+    ): Response<Unit>
+
+
+    @FormUrlEncoded
+    @POST("courses/invite_member")
+    suspend fun inviteMember(
+        @Field("course_id") courseId: Int,
+        @Field("participant_id") participantId: Int,
+        @Field("type") type: String,
+    ): Response<Unit>
+
+    @FormUrlEncoded
+    @POST("courses/accept_invite")
+    suspend fun acceptInvite(
+        @Field("course_id") courseId: Int,
+        @Field("isAccept") isAccept: Boolean,
+    ): Response<Boolean>
+
+
+    @GET("search_users")
+    suspend fun searchCourseUser(
+        @Query("course_id") courseId: Int,
+        @Query("search") search: String,
+    ): Response<List<Profile>>
+
+    @GET("search")
+    suspend fun search(
+        @Query("search") search: String,
+    ): Response<Search>
+
+    @GET("get_invites")
+    suspend fun getInvites(): Response<List<CourseInvite>>
 }

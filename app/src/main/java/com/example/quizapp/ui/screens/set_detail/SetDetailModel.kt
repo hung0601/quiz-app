@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.quizapp.data.session.SessionCache
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.response_model.ApiResponse
@@ -23,11 +24,14 @@ sealed interface StudySetUiState {
 class SetDetailModel @Inject constructor(
     private val quizApiRepository: QuizApiRepository,
     private val savedStateHandle: SavedStateHandle,
+    private val sessionCache: SessionCache,
 ) :
     ViewModel() {
     var uiState: StudySetUiState by mutableStateOf(StudySetUiState.Loading)
         private set
     private val itemId: Int = checkNotNull(savedStateHandle.get<Int>("id"))
+
+    val currentUser = sessionCache.getActiveSession()?.user
 
     init {
         getStudySet()

@@ -3,19 +3,19 @@ package com.example.quizapp.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+
 @Serializable
-data class Profile(
+data class CourseDetail(
     val id: Int,
-    val name: String,
-    val email: String,
-    @SerialName(value = "image_url")
-    val imageUrl: String?,
-    @SerialName(value = "courses_count")
-    val coursesCount: Int? = 0,
-    @SerialName(value = "study_sets_count")
-    val studySetsCount: Int? = 0,
+    val title: String,
+    val description: String,
+    val owner: Profile,
+    val enrollments: List<Enrollment>,
+    @SerialName(value = "study_sets")
+    val studySets: List<StudySet>,
     @SerialName(value = "created_at")
     val createdAt: String?,
     @SerialName(value = "updated_at")
     val updatedAt: String?
+
 )

@@ -15,13 +15,19 @@ import androidx.navigation.navigation
 import com.example.quizapp.ui.navigation.HOME_GRAPH_ROUTE
 import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.UserViewModel
+import com.example.quizapp.ui.screens.course.create.CreateCourseScreen
+import com.example.quizapp.ui.screens.course.detail.CourseDetailScreen
+import com.example.quizapp.ui.screens.exam.ExamScreen
 import com.example.quizapp.ui.screens.flash_card.FlashCardScreen
 import com.example.quizapp.ui.screens.home.HomeScreen
-import com.example.quizapp.ui.screens.home.TestHomeScreen
+import com.example.quizapp.ui.screens.library.LibraryScreen
+import com.example.quizapp.ui.screens.notification.NotificationScreen
 import com.example.quizapp.ui.screens.profile.ProfileScreen
+import com.example.quizapp.ui.screens.search.SearchScreen
 import com.example.quizapp.ui.screens.set_detail.SetDetailModel
 import com.example.quizapp.ui.screens.set_detail.SetDetailScreen
 import com.example.quizapp.ui.screens.set_detail.StudySetUiState
+import com.example.quizapp.ui.screens.set_detail.create.CreateSetScreen
 
 fun NavGraphBuilder.homeNavGraph(
     navController: NavHostController
@@ -37,8 +43,15 @@ fun NavGraphBuilder.homeNavGraph(
             if (userViewModel.session == null) {
                 navController.navigate(Screen.Login.route)
             }
+            HomeScreen(navController)
 
-            TestHomeScreen(navController = navController)
+        }
+        composable(
+            route = Screen.Search.route
+        ) {
+
+            SearchScreen(navController)
+
         }
         composable(
             route = Screen.Home.route
@@ -50,6 +63,13 @@ fun NavGraphBuilder.homeNavGraph(
 
             HomeScreen(navController = navController)
         }
+
+        composable(
+            route = Screen.Library.route
+        ) {
+            LibraryScreen(navController = navController)
+        }
+        //Study set detail
         composable(
             route = Screen.StudySet.route,
             arguments = listOf(
@@ -66,6 +86,20 @@ fun NavGraphBuilder.homeNavGraph(
                 navController = navController
             )
         }
+        //Course detail
+        composable(
+            route = Screen.Course.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            CourseDetailScreen(
+                navController = navController
+            )
+        }
+        //Flash card
         composable(
             route = Screen.FlashCard.route,
             arguments = listOf(
@@ -81,8 +115,44 @@ fun NavGraphBuilder.homeNavGraph(
                 else -> Text(text = "error")
             }
         }
+
+        //Flash card
+        composable(
+            route = Screen.Exam.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            val viewModel = it.sharedViewModel<SetDetailModel>(navController)
+            val studySetUiState: StudySetUiState = viewModel.uiState
+            when (studySetUiState) {
+                is StudySetUiState.Success -> ExamScreen(studySet = studySetUiState.studySet)
+                else -> Text(text = "error")
+            }
+        }
+
         composable(route = Screen.Profile.route) {
             ProfileScreen(navController = navController)
+        }
+
+        composable(route = Screen.CreateCourse.route) {
+            CreateCourseScreen(navController)
+        }
+        composable(route = Screen.Notification.route) {
+            NotificationScreen(navController)
+        }
+        composable(
+            route = Screen.CreateStudySet.route,
+            arguments = listOf(
+                navArgument("courseId") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+            )
+        ) {
+            CreateSetScreen(navController)
         }
     }
 }

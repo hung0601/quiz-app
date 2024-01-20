@@ -1,12 +1,11 @@
-package com.example.quizapp.ui.screens.auth
+package com.example.quizapp.ui.screens.course.detail
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.quizapp.data.session.Session
 import com.example.quizapp.data.session.SessionCache
-import com.example.quizapp.model.Token
+import com.example.quizapp.model.CourseDetail
 import com.example.quizapp.network.QuizApiRepository
-import com.example.quizapp.network.request_model.LoginRequest
 import com.example.quizapp.network.response_model.ApiResponse
 import com.example.quizapp.network.response_model.ResponseHandlerState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,32 +15,30 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel
-class LoginViewModel @Inject constructor(
-    private val sessionCache: SessionCache,
-    private val quizApiRepository: QuizApiRepository,
-) : ViewModel() {
-    private val _loginResponse =
-        MutableStateFlow<ResponseHandlerState<Token>>(ResponseHandlerState.Init)
-    val loginResponse: StateFlow<ResponseHandlerState<Token>> = _loginResponse.asStateFlow()
 
-    fun resetState() {
-        _loginResponse.value = ResponseHandlerState.Init
+@HiltViewModel
+class CourseViewModel @Inject constructor(
+    private val quizApiRepository: QuizApiRepository,
+    private val savedStateHandle: SavedStateHandle,
+    private val sessionCache: SessionCache,
+) : ViewModel() {
+    private val _courseDetail =
+        MutableStateFlow<ResponseHandlerState<CourseDetail>>(ResponseHandlerState.Loading)
+    val courseDetail: StateFlow<ResponseHandlerState<CourseDetail>> = _courseDetail.asStateFlow()
+    private val itemId: Int = checkNotNull(savedStateHandle.get<Int>("id"))
+
+    val currentUser = sessionCache.getActiveSession()?.user
+
+    init {
+        getCourse()
     }
 
-    fun login(email: String, password: String) {
+    fun getCourse() {
         viewModelScope.launch {
-            _loginResponse.value = ResponseHandlerState.Loading
-            val response = quizApiRepository.login(LoginRequest(email, password))
-            _loginResponse.value = when (response) {
+            _courseDetail.value = ResponseHandlerState.Loading
+            val response = quizApiRepository.getCourse(itemId)
+            _courseDetail.value = when (response) {
                 is ApiResponse.Success -> {
-                    sessionCache.saveSession(
-                        Session(
-                            response.data.accessToken,
-                            1L,
-                            response.data.user
-                        )
-                    )
                     ResponseHandlerState.Success(response.data)
                 }
 

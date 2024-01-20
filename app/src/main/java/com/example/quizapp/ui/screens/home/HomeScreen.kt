@@ -34,7 +34,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Article
@@ -42,12 +41,12 @@ import androidx.compose.material.icons.outlined.Class
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.School
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,25 +56,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
 import com.example.quizapp.R
 import com.example.quizapp.model.Course
+import com.example.quizapp.model.CourseInvite
+import com.example.quizapp.model.Profile
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.network.response_model.ResponseHandlerState
+import com.example.quizapp.ui.components.avatar.CircleAvatar
 import com.example.quizapp.ui.components.card.CustomCard
+import com.example.quizapp.ui.components.card.StudySetCard
 import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen
@@ -84,18 +82,24 @@ import com.example.quizapp.ui.theme.quizappTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun TestHomeScreen(
+fun HomeScreen(
     navController: NavHostController = rememberNavController(),
 ) {
     val homeViewModel = hiltViewModel<HomeViewModel>()
     val studySetList by homeViewModel.studySetList.collectAsState()
     val courseList by homeViewModel.courseList.collectAsState()
+    val creatorList by homeViewModel.creatorList.collectAsState()
+    val inviteList by homeViewModel.inviteList.collectAsState()
     val listState = rememberLazyListState()
     val isScrolledOnTop by remember {
         derivedStateOf { listState.firstVisibleItemScrollOffset == 0 }
     }
+
     Column {
-        HomeTopBar(isScrolledOnTop)
+        HomeTopBar(
+            isScrolledOnTop,
+            inviteList,
+            onOpenNotification = { navController.navigate(Screen.Notification.route) })
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -140,14 +144,35 @@ fun TestHomeScreen(
 
                 }
             }
-            item { TopCreaterList() }
+            item {
+                when (creatorList) {
+                    is ResponseHandlerState.Success -> {
+                        TopCreatesList(
+                            navController,
+                            (creatorList as ResponseHandlerState.Success<List<Profile>>).data
+                        )
+                    }
+
+                    is ResponseHandlerState.Loading -> {
+                        LoadingScreen()
+                    }
+
+                    else -> {
+                        ErrorScreen()
+                    }
+
+                }
+            }
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TopCreaterList() {
+fun TopCreatesList(
+    navController: NavHostController,
+    creatorList: List<Profile>
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -175,14 +200,8 @@ fun TopCreaterList() {
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             flingBehavior = snapBehavior,
         ) {
-            item {
-                TopCreatorCard()
-            }
-            item {
-                TopCreatorCard()
-            }
-            item {
-                TopCreatorCard()
+            items(creatorList) {
+                TopCreatorCard(navController, it)
             }
         }
 
@@ -190,7 +209,10 @@ fun TopCreaterList() {
 }
 
 @Composable
-fun TopCreatorCard() {
+fun TopCreatorCard(
+    navController: NavHostController,
+    creator: Profile,
+) {
     CustomCard(
         modifier = Modifier
             .width(200.dp)
@@ -203,26 +225,16 @@ fun TopCreatorCard() {
                 .fillMaxWidth()
         ) {
             Row {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(40.dp, 40.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = CircleShape
-                        )
-                ) {
-                    Text(
-                        text = "Manh Hung".first().toString().uppercase(),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
+                CircleAvatar(
+                    avatarImg = creator.imageUrl,
+                    name = creator.name,
+                    modifier = Modifier.size(40.dp, 40.dp)
+                )
 
             }
             Row {
                 Text(
-                    text = "Manh Hung",
+                    text = creator.name,
                     style = MaterialTheme.typography.titleMedium
                 )
             }
@@ -243,7 +255,7 @@ fun TopCreatorCard() {
                         tint = MaterialTheme.colorScheme.onSecondary
                     )
                     Text(
-                        text = "11 Study sets",
+                        text = creator.studySetsCount.toString() + " Study sets",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSecondary
                     )
@@ -264,7 +276,8 @@ fun TopCreatorCard() {
                         tint = MaterialTheme.colorScheme.onSecondary
                     )
                     Text(
-                        text = "11 Courses", style = MaterialTheme.typography.labelSmall,
+                        text = creator.coursesCount.toString() + " Courses",
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSecondary
                     )
                 }
@@ -320,6 +333,7 @@ fun CourseCard(
     course: Course
 ) {
     CustomCard(
+        onClick = { navController.navigate(Screen.Course.passId(course.id)) },
         modifier = Modifier
             .width(200.dp)
 
@@ -342,21 +356,11 @@ fun CourseCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(20.dp, 20.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Text(
-                                text = course.owner.name.first().toString().uppercase(),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
+                        CircleAvatar(
+                            avatarImg = course.owner.imageUrl,
+                            name = course.owner.name,
+                            modifier = Modifier.size(20.dp, 20.dp)
+                        )
                         Box(
                             modifier = Modifier.weight(3f)
                         ) {
@@ -436,93 +440,14 @@ fun StudySetList(
     }
 }
 
-@Composable
-fun StudySetCard(navController: NavHostController, studySet: StudySet) {
-    CustomCard(
-        onClick = { navController.navigate(Screen.StudySet.passId(studySet.id)) },
-        modifier = Modifier
-            .width(200.dp)
-
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp),
-        ) {
-            AsyncImage(
-                model = studySet.imageUrl,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 5.dp, bottom = 5.dp)
-                    .background(
-                        MaterialTheme.colorScheme.tertiary,
-                        RoundedCornerShape(5.dp)
-                    )
-            ) {
-                Text(
-                    text = studySet.termNumber.toString() + " terms",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onTertiary,
-                    modifier = Modifier.padding(3.dp)
-                )
-            }
-        }
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-        ) {
-
-            Text(
-                text = studySet.title,
-                style = MaterialTheme.typography.titleMedium,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
-                modifier = Modifier.height(48.dp)
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(20.dp, 20.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = CircleShape
-                        )
-                ) {
-                    Text(
-                        text = studySet.owner.name.first().toString().uppercase(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-                Box(
-                    modifier = Modifier.weight(3f)
-                ) {
-                    Text(
-                        text = studySet.owner.name,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTopBar(isScrollOnTop: Boolean) {
+fun HomeTopBar(
+    isScrollOnTop: Boolean,
+    inviteList: ResponseHandlerState<List<CourseInvite>>,
+    onOpenNotification: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -542,26 +467,28 @@ fun HomeTopBar(isScrollOnTop: Boolean) {
                         style = MaterialTheme.typography.titleLarge,
                     )
                 }
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Notifications,
-                        contentDescription = "notifications"
-                    )
+                IconButton(onClick = { onOpenNotification() }) {
+                    BadgedBox(
+                        badge = {
+                            if (inviteList is ResponseHandlerState.Success) {
+                                Badge {
+                                    Text(
+                                        inviteList.data.size.toString(),
+                                        modifier = Modifier.semantics {
+                                            contentDescription = "new notifications"
+                                        }
+                                    )
+                                }
+                            }
+                        }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = "notifications"
+                        )
+                    }
+
                 }
             }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = CircleShape,
-                placeholder = { Text(text = "Search sets, courses, creators...") },
-            )
         }
     }
 }
@@ -576,109 +503,7 @@ fun PreviewTest() {
                 .fillMaxSize()
                 .padding(5.dp)
         ) {
-            TestHomeScreen()
+            HomeScreen()
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HomeScreen(
-    navController: NavHostController = rememberNavController(),
-    modifier: Modifier = Modifier
-) {
-    val quizViewModel = hiltViewModel<QuizViewModel>()
-    val quizUiState: QuizUiState = quizViewModel.quizUiState
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentScreen = backStackEntry?.destination?.route ?: Screen.Home.route
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        when (quizUiState) {
-            is QuizUiState.Loading -> LoadingScreen(modifier = modifier)
-            is QuizUiState.Success -> StudySetListScreen(
-                studySets = quizUiState.studySets,
-                onTermCardClicked = {
-                    //viewModel.setCurrentSet(it)
-                    navController.navigate(Screen.StudySet.passId(it.id))
-                }
-            )
-
-            else -> ErrorScreen(modifier = modifier)
-        }
-    }
-
-
-}
-
-@Composable
-fun StudySetListScreen(
-    studySets: List<StudySet>,
-    onTermCardClicked: (studySet: StudySet) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(modifier = modifier) {
-        items(studySets) {
-            StudySetCard(
-                studySet = it,
-                onTermCardClicked = onTermCardClicked,
-                modifier = Modifier
-                    .padding(4.dp)
-            )
-
-        }
-    }
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun StudySetCard(
-    studySet: StudySet,
-    onTermCardClicked: (studySet: StudySet) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedCard(
-        onClick = { onTermCardClicked(studySet) },
-        modifier = modifier
-    ) {
-        Row {
-            if (studySet.imageUrl.isNotEmpty()) {
-                AsyncImage(
-                    model = studySet.imageUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .width(150.dp)
-                        .height(120.dp),
-                    contentScale = ContentScale.Crop,
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .height(110.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = studySet.title, style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                )
-                Text(text = studySet.description)
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(text = studySet.termNumber.toString() + " thuật ngữ", color = Color.Blue)
-                }
-            }
-
-        }
-
     }
 }

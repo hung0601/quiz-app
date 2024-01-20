@@ -2,6 +2,7 @@ package com.example.quizapp.ui.screens
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,11 +38,20 @@ fun QuizAppTopBar(
             modifier = Modifier,
             navigationIcon = {
                 if (appScreen?.canNavigateBack != false) {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back button"
-                        )
+                    if (appScreen?.navigateIconType == 1) {
+                        IconButton(onClick = { navController.navigateUp() }) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = "Back button"
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Back button"
+                            )
+                        }
                     }
                 }
             }

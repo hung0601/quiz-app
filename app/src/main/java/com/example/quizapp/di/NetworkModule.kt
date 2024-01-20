@@ -38,7 +38,7 @@ class NetworkModule {
             .addConverterFactory(Json {
                 ignoreUnknownKeys = true
             }.asConverterFactory("application/json".toMediaType()))
-            .baseUrl("http://192.168.1.7:8000/api/")
+            .baseUrl("http://10.0.2.2:8000/api/")
             .client((httpClient))
             .build()
     }

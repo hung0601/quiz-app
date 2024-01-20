@@ -28,9 +28,9 @@ data class StudySet(
     val id: Int,
     val title: String,
     val description: String,
-    val owner: Profile,
+    val owner: Profile? = null,
     @SerialName(value = "term_number")
-    val termNumber: Int,
+    val termNumber: Int = 0,
     @SerialName(value = "image_url")
     val imageUrl: String,
     @SerialName(value = "created_at")

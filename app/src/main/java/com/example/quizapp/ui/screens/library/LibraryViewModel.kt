@@ -1,11 +1,8 @@
-package com.example.quizapp.ui.screens.home
+package com.example.quizapp.ui.screens.library
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quizapp.model.Course
-import com.example.quizapp.model.CourseInvite
-import com.example.quizapp.model.Profile
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.response_model.ApiResponse
@@ -17,9 +14,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+class LibraryViewModel @Inject constructor(
     private val quizApiRepository: QuizApiRepository,
 ) : ViewModel() {
     private val _studySetList =
@@ -30,42 +26,9 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow<ResponseHandlerState<List<Course>>>(ResponseHandlerState.Loading)
     val courseList: StateFlow<ResponseHandlerState<List<Course>>> = _courseList.asStateFlow()
 
-    private val _creatorList =
-        MutableStateFlow<ResponseHandlerState<List<Profile>>>(ResponseHandlerState.Loading)
-    val creatorList: StateFlow<ResponseHandlerState<List<Profile>>> = _creatorList.asStateFlow()
-
-    private val _inviteList =
-        MutableStateFlow<ResponseHandlerState<List<CourseInvite>>>(ResponseHandlerState.Loading)
-    val inviteList: StateFlow<ResponseHandlerState<List<CourseInvite>>> = _inviteList.asStateFlow()
-
-
     init {
         getCourseList()
         getStudySetList()
-        getCreatorList()
-        getInvites()
-    }
-
-
-    fun getInvites() {
-        viewModelScope.launch {
-            _inviteList.value = ResponseHandlerState.Loading
-            val response = quizApiRepository.getInvites()
-            Log.d("response", response.toString())
-            _inviteList.value = when (response) {
-                is ApiResponse.Success -> {
-                    ResponseHandlerState.Success(response.data)
-                }
-
-                is ApiResponse.Error -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-
-                is ApiResponse.Exception -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-            }
-        }
     }
 
     fun getStudySetList() {
@@ -93,26 +56,6 @@ class HomeViewModel @Inject constructor(
             _courseList.value = ResponseHandlerState.Loading
             val response = quizApiRepository.getCourses()
             _courseList.value = when (response) {
-                is ApiResponse.Success -> {
-                    ResponseHandlerState.Success(response.data)
-                }
-
-                is ApiResponse.Error -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-
-                is ApiResponse.Exception -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-            }
-        }
-    }
-
-    fun getCreatorList() {
-        viewModelScope.launch {
-            _creatorList.value = ResponseHandlerState.Loading
-            val response = quizApiRepository.getTopCreators()
-            _creatorList.value = when (response) {
                 is ApiResponse.Success -> {
                     ResponseHandlerState.Success(response.data)
                 }
