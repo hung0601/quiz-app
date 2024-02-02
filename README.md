@@ -1,0 +1,1 @@
+Một ứng dụng học từ vựng và thuật ngữ thông qua các thẻ từ và các bài kiểm tra. Người dùng có thể tạo và lưu trữ các bộ từ vựng, có thể sử dụng ứng dụng để ôn luyện bất cứ khi nào. Có thể tạo các khóa học chứa các bộ từ vựng
