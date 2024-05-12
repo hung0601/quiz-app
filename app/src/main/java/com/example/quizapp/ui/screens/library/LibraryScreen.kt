@@ -32,8 +32,8 @@ import androidx.navigation.NavController
 import com.example.quizapp.model.Course
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.network.response_model.ResponseHandlerState
-import com.example.quizapp.ui.components.card.CourseItemCard
-import com.example.quizapp.ui.components.card.StudySetItem
+import com.example.quizapp.ui.components.basic.card.CourseItemCard
+import com.example.quizapp.ui.components.basic.card.StudySetItem
 import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen

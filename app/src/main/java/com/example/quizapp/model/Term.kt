@@ -5,14 +5,15 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class Term (
+data class Term(
     val id: Int,
     val term: String,
     val definition: String,
+    val status: Int,
     @SerialName(value = "study_set_id")
     val studySetId: Int,
     @SerialName(value = "image_url")
-    val imageUrl: String,
+    val imageUrl: String?,
     @SerialName(value = "created_at")
     val createdAt: String?,
     @SerialName(value = "updated_at")

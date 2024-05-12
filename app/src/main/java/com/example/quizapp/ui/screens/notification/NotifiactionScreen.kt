@@ -38,7 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.quizapp.model.CourseInvite
 import com.example.quizapp.network.response_model.ResponseHandlerState
-import com.example.quizapp.ui.components.avatar.CircleAvatar
+import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
 import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen

@@ -25,6 +25,7 @@ import com.example.quizapp.model.StudySet
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
 import com.example.quizapp.model.Token
+import com.example.quizapp.network.request_model.StoreStudyRequest
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -121,4 +122,8 @@ interface QuizApiService {
 
     @GET("get_invites")
     suspend fun getInvites(): Response<List<CourseInvite>>
+
+    @POST("exam/study_results")
+    suspend fun storeStudyResults(@Body body: List<StoreStudyRequest>): Response<Unit>
+
 }

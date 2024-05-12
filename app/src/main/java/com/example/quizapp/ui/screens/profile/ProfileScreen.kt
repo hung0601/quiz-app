@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.quizapp.ui.components.avatar.CircleAvatar
+import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
 import com.example.quizapp.ui.navigation.AUTH_GRAPH_ROUTE
 import com.example.quizapp.ui.screens.UserViewModel
 

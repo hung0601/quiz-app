@@ -56,7 +56,7 @@ sealed class Screen(
     }
 
     object Exam :
-        Screen(route = "exam/{id}", title = "Exam", isShowBottomBar = false) {
+        Screen(route = "exam/{id}", title = "Exam", isShowBottomBar = false, isShowTopBar = false) {
         fun passId(
             id: Int
         ): String {

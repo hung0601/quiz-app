@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.components.card
+package com.example.quizapp.ui.components.basic.card
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.quizapp.model.StudySet
-import com.example.quizapp.ui.components.avatar.CircleAvatar
+import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
 import com.example.quizapp.ui.navigation.Screen
 
 

@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,6 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -165,6 +167,7 @@ fun FlipCard(
         animationSpec = tween(500), label = ""
     )
 
+    val context = LocalContext.current
 
     ElevatedCard(
         colors = CardDefaults.cardColors(
@@ -214,9 +217,12 @@ fun FlipCard(
                     Icons.Outlined.PlayArrow,
                     contentDescription = null,
                     tint = Color(0xff586380),
-
-                    )
+                    modifier = Modifier.clickable {
+                        flashCardModel.textToSpeech(context, term.term)
+                    }
+                )
             }
+
         }
         Column(
             Modifier
@@ -245,20 +251,22 @@ fun FlipCard(
                         }
 
                 ) {
-                    AsyncImage(
-                        model = term.imageUrl,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .padding(start = 50.dp, end = 50.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .graphicsLayer {
-                                alpha = if (rotated) animateBack else animateFront
-                                rotationY = rotation180
-                            },
-                        contentScale = ContentScale.Crop,
-                    )
+                    if (term.imageUrl != null) {
+                        AsyncImage(
+                            model = term.imageUrl,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .padding(start = 50.dp, end = 50.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .graphicsLayer {
+                                    alpha = if (rotated) animateBack else animateFront
+                                    rotationY = rotation180
+                                },
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
                     Text(
                         text = term.definition,
                         style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Normal),

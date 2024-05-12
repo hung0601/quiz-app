@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.components.card
+package com.example.quizapp.ui.components.basic.card
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,14 +23,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.quizapp.model.Course
-import com.example.quizapp.ui.components.avatar.CircleAvatar
+import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
 import com.example.quizapp.ui.navigation.Screen
 
 
 @Composable
 fun CourseItemCard(navController: NavController, course: Course) {
     CustomCard(
-        onClick = { navController.navigate(Screen.Course.passId(course.id))},
+        onClick = { navController.navigate(Screen.Course.passId(course.id)) },
         modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
@@ -84,7 +84,7 @@ fun CourseItemCard(navController: NavController, course: Course) {
                             modifier = Modifier.width(15.dp)
                         )
                         Text(
-                            text = course.studySetCount.toString()+" Study sets",
+                            text = course.studySetCount.toString() + " Study sets",
                             style = MaterialTheme.typography.labelSmall
                         )
                     }
@@ -95,7 +95,7 @@ fun CourseItemCard(navController: NavController, course: Course) {
                             modifier = Modifier.width(15.dp)
                         )
                         Text(
-                            text = course.enrollmentsCount.toString()+" Members",
+                            text = course.enrollmentsCount.toString() + " Members",
                             style = MaterialTheme.typography.labelSmall
                         )
                     }

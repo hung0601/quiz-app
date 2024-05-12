@@ -16,6 +16,5 @@ data class CourseDetail(
     @SerialName(value = "created_at")
     val createdAt: String?,
     @SerialName(value = "updated_at")
-    val updatedAt: String?
-
+    val updatedAt: String?,
 )

@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.components.avatar
+package com.example.quizapp.ui.components.basic.avatar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

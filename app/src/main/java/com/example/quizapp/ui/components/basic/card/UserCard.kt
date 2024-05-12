@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.components.card
+package com.example.quizapp.ui.components.basic.card
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.quizapp.model.Profile
-import com.example.quizapp.ui.components.avatar.CircleAvatar
+import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
 
 
 @Composable

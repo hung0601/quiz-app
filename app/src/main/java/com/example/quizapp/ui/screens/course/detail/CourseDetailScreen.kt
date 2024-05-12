@@ -53,10 +53,10 @@ import com.example.quizapp.model.Enrollment
 import com.example.quizapp.model.Profile
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.network.response_model.ResponseHandlerState
-import com.example.quizapp.ui.components.avatar.CircleAvatar
-import com.example.quizapp.ui.components.card.MemberItem
-import com.example.quizapp.ui.components.card.StudySetItem
-import com.example.quizapp.ui.components.textfield.CustomTextField
+import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
+import com.example.quizapp.ui.components.basic.card.MemberItem
+import com.example.quizapp.ui.components.basic.card.StudySetItem
+import com.example.quizapp.ui.components.basic.textfield.CustomTextField
 import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen

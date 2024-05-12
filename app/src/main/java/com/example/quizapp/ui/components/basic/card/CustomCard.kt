@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.components.card
+package com.example.quizapp.ui.components.basic.card
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column

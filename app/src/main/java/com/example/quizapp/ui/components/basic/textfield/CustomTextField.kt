@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.components.textfield
+package com.example.quizapp.ui.components.basic.textfield
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions

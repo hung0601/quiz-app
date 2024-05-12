@@ -22,7 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.quizapp.model.Course
 import com.example.quizapp.network.response_model.ResponseHandlerState
-import com.example.quizapp.ui.components.textfield.CustomTextField
+import com.example.quizapp.ui.components.basic.textfield.CustomTextField
 import com.example.quizapp.ui.navigation.Screen
 import kotlinx.coroutines.launch
 

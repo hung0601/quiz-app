@@ -128,7 +128,11 @@ fun NavGraphBuilder.homeNavGraph(
             val viewModel = it.sharedViewModel<SetDetailModel>(navController)
             val studySetUiState: StudySetUiState = viewModel.uiState
             when (studySetUiState) {
-                is StudySetUiState.Success -> ExamScreen(studySet = studySetUiState.studySet)
+                is StudySetUiState.Success -> ExamScreen(
+                    studySet = studySetUiState.studySet,
+                    navController = navController
+                )
+
                 else -> Text(text = "error")
             }
         }

@@ -25,10 +25,11 @@ import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
 import com.example.quizapp.model.Token
 import com.example.quizapp.network.request_model.LoginRequest
+import com.example.quizapp.network.request_model.StoreStudyRequest
 import com.example.quizapp.network.response_model.ApiResponse
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 
 
@@ -72,6 +73,7 @@ interface QuizApiRepository {
 
     suspend fun searchCourseUsers(courseId: Int, search: String): ApiResponse<List<Profile>>
     suspend fun search(search: String): ApiResponse<Search>
+    suspend fun storeStudyResults(results: List<StoreStudyRequest>): ApiResponse<Unit>
 }
 
 /**
@@ -143,7 +145,7 @@ class NetworkQuizApiRepository(
                 .addFormDataPart(
                     "image",
                     image.name,
-                    RequestBody.create("image/*".toMediaTypeOrNull(), image)
+                    image.asRequestBody("image/*".toMediaTypeOrNull())
                 )
             if (courseId != null) builder.addFormDataPart("course_id", courseId.toString())
             val requestBody = builder.build()
@@ -166,7 +168,7 @@ class NetworkQuizApiRepository(
                 .addFormDataPart(
                     "image",
                     image.name,
-                    RequestBody.create("image/*".toMediaTypeOrNull(), image)
+                    image.asRequestBody("image/*".toMediaTypeOrNull())
 
                 )
             val requestBody = builder.build()
@@ -199,4 +201,9 @@ class NetworkQuizApiRepository(
         }
     }
 
+    override suspend fun storeStudyResults(results: List<StoreStudyRequest>): ApiResponse<Unit> {
+        return handleApi {
+            quizApiService.storeStudyResults(results)
+        }
+    }
 }
