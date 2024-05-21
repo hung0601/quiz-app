@@ -19,6 +19,7 @@ package com.example.quizapp.network
 import com.example.quizapp.model.Course
 import com.example.quizapp.model.CourseDetail
 import com.example.quizapp.model.CourseInvite
+import com.example.quizapp.model.ExamDetail
 import com.example.quizapp.model.Profile
 import com.example.quizapp.model.Search
 import com.example.quizapp.model.StudySet
@@ -26,6 +27,7 @@ import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
 import com.example.quizapp.model.Token
 import com.example.quizapp.network.request_model.StoreStudyRequest
+import com.example.quizapp.network.request_model.SubmitExamRequest
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -126,4 +128,19 @@ interface QuizApiService {
     @POST("exam/study_results")
     suspend fun storeStudyResults(@Body body: List<StoreStudyRequest>): Response<Unit>
 
+    @GET("exam/{id}")
+    suspend fun getExam(@Path("id") setId: Int): Response<ExamDetail>
+
+    @FormUrlEncoded
+    @POST("vote")
+    suspend fun voteSet(
+        @Field("study_set_id") studySetId: Int,
+        @Field("star") star: Int,
+    ): Response<Float>
+
+    @POST("exam/{id}/submit")
+    suspend fun submitExam(
+        @Path("id") examId: Int,
+        @Body body: List<SubmitExamRequest>
+    ): Response<Unit>
 }

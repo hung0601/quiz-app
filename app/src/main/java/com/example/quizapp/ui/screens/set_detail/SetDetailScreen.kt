@@ -16,6 +16,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Reviews
 import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -64,13 +66,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import coil.imageLoader
-import coil.request.ImageRequest
 import com.example.quizapp.model.StudySetDetail
-import com.example.quizapp.model.Term
 import com.example.quizapp.network.response_model.ResponseHandlerState
 import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
+import com.example.quizapp.ui.components.basic.dialog.VoteDialog
+import com.example.quizapp.ui.components.basic.star_review.StarReview
+import com.example.quizapp.ui.components.basic.tag.CustomTag
 import com.example.quizapp.ui.components.basic.textfield.CustomTextField
+import com.example.quizapp.ui.components.business.exam.ExamListDialog
+import com.example.quizapp.ui.components.business.term.TermItem
 import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen
@@ -96,11 +100,10 @@ fun SetDetailScreen(
 
         else -> ErrorScreen(modifier = Modifier)
     }
-
-
 }
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DetailScreen(
     studySet: StudySetDetail,
@@ -109,18 +112,44 @@ fun DetailScreen(
     navController: NavController
 ) {
     var openAddTermDialog by remember { mutableStateOf(false) }
+    var openExamListDialog by remember { mutableStateOf(false) }
+    var openVoteDialog by remember { mutableStateOf(false) }
+    val voteResponse by setDetailModel.voteResponse.collectAsState()
     var isHideHeader by remember {
         mutableStateOf(false)
     }
     val termListState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     LaunchedEffect(key1 = termListState.firstVisibleItemScrollOffset) {
         if (termListState.firstVisibleItemScrollOffset > 0) isHideHeader = true
+    }
+    LaunchedEffect(key1 = voteResponse is ResponseHandlerState.Success) {
+        scope.launch {
+            if (voteResponse is ResponseHandlerState.Success) {
+                setDetailModel.updateVote((voteResponse as ResponseHandlerState.Success<Float>).data)
+            }
+        }
     }
     Column(modifier = Modifier.padding(8.dp)) {
         if (openAddTermDialog) {
             AddTermDialog(onDismissRequest = { openAddTermDialog = false },
                 studySet,
                 onAddedTerm = { setDetailModel.getStudySet() })
+        }
+        if (openExamListDialog) {
+            ExamListDialog(
+                onConfirmation = { openExamListDialog = false },
+                examList = studySet.exams,
+                onSelect = {
+                    navController.navigate(Screen.CustomExam.passId(it))
+                }
+            )
+        }
+        if (openVoteDialog) {
+            VoteDialog(onVote = {
+                openVoteDialog = false
+                setDetailModel.sendVote(it)
+            }, onCancel = { openVoteDialog = false })
         }
         AnimatedVisibility(
             visible = !isHideHeader,
@@ -149,11 +178,44 @@ fun DetailScreen(
                     }
                     if (setDetailModel.currentUser != null && setDetailModel.currentUser.id == studySet.owner.id) {
                         IconButton(onClick = { openAddTermDialog = true }) {
-                            Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Outlined.Add,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary
+                            )
                         }
                     }
                 }
-
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    StarReview(
+                        star = studySet.votesAvgStar ?: 0F,
+                        size = 15,
+                        disable = true,
+                        isShowText = true
+                    )
+                    IconButton(
+                        onClick = { openVoteDialog = true },
+                        modifier = Modifier.height(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Reviews,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                }
+                FlowRow(
+                    modifier = Modifier.padding(top = 5.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    studySet.topics.map {
+                        CustomTag(text = it.name, modifier = Modifier.padding(bottom = 5.dp))
+                    }
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -286,18 +348,26 @@ fun DetailScreen(
 
             ) {
                 Button(
+                    onClick = { onClickStudy() },
+                    enabled = studySet.terms.isNotEmpty()
+                ) {
+                    Text(text = "Flashcard")
+                }
+                Button(
                     onClick = {
                         navController.navigate(Screen.Exam.passId(studySet.id))
                     },
                     enabled = studySet.terms.size >= 5
                 ) {
-                    Text(text = "Exam")
+                    Text(text = "Learn")
                 }
                 Button(
-                    onClick = { onClickStudy() },
-                    enabled = studySet.terms.isNotEmpty()
+                    onClick = {
+                        openExamListDialog = true
+                    },
+                    enabled = studySet.terms.size >= 5
                 ) {
-                    Text(text = "Study")
+                    Text(text = "Exam")
                 }
             }
         }
@@ -465,36 +535,3 @@ fun AddTermDialog(
 
     }
 }
-
-@Composable
-fun TermItem(term: Term) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        val request: ImageRequest = ImageRequest.Builder(LocalContext.current.applicationContext)
-            .data(term.imageUrl)
-            .crossfade(true)
-            .diskCacheKey(term.imageUrl)
-            .build()
-
-        LocalContext.current.applicationContext.imageLoader.enqueue(request)
-        Column(modifier = Modifier.padding(5.dp)) {
-            Text(text = term.term, style = TextStyle(fontWeight = FontWeight.SemiBold))
-            Text(text = term.definition)
-        }
-        if (term.imageUrl != null) {
-            AsyncImage(
-                model = request,
-                contentDescription = null,
-                modifier = Modifier
-                    .height(60.dp)
-                    .width(60.dp)
-                    .clip(RoundedCornerShape(4.dp)),
-                contentScale = ContentScale.Crop,
-            )
-        }
-    }
-}
-

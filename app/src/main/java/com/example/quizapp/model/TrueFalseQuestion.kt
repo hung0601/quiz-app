@@ -8,5 +8,5 @@ data class TrueFalseQuestion(
     val id: Int = 0,
     val question: String,
     @SerialName(value = "correct_answer")
-    val correctAnswer: Boolean,
+    val correctAnswer: Boolean
 )

@@ -13,18 +13,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.quizapp.model.ExamResult
 import com.example.quizapp.model.Question
 import com.example.quizapp.model.TrueFalseQuestion
 import com.example.quizapp.ui.components.basic.card.CustomCard
-import com.example.quizapp.ui.screens.exam.ExamResult
-import com.example.quizapp.ui.screens.exam.ExamViewModel
 
 @Composable
 fun TrueFalseQuestion(
     question: Question,
     questionDetail: TrueFalseQuestion,
     handleNext: () -> Unit,
-    examViewModel: ExamViewModel
+    handleAddQuestion: (ExamResult) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         if (question.hasAudio) {
@@ -49,7 +48,7 @@ fun TrueFalseQuestion(
                         question,
                         questionDetail,
                         handleNext,
-                        examViewModel,
+                        handleAddQuestion,
                         true
                     )
                 }) {
@@ -73,7 +72,7 @@ fun TrueFalseQuestion(
                         question,
                         questionDetail,
                         handleNext,
-                        examViewModel,
+                        handleAddQuestion,
                         false
                     )
                 }) {
@@ -97,7 +96,7 @@ fun handleSelectAnswer(
     question: Question,
     questionDetail: TrueFalseQuestion,
     handleNext: () -> Unit,
-    examViewModel: ExamViewModel,
+    handleAddQuestion: (ExamResult) -> Unit,
     selectedAnswer: Boolean,
 ) {
     val result = ExamResult(
@@ -107,8 +106,6 @@ fun handleSelectAnswer(
         questionDetail.correctAnswer,
         questionDetail.correctAnswer == selectedAnswer
     )
-    examViewModel.addResult(
-        result
-    )
+    handleAddQuestion(result)
     handleNext()
 }

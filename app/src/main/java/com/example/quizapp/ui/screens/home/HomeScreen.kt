@@ -79,8 +79,6 @@ import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen
 import com.example.quizapp.ui.theme.quizappTheme
 
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     navController: NavHostController = rememberNavController(),
@@ -306,7 +304,7 @@ fun CourseList(
                 .fillMaxWidth()
                 .padding(start = 20.dp, end = 20.dp),
         ) {
-            Text(text = "Courses", style = MaterialTheme.typography.titleLarge)
+            Text(text = "Collections", style = MaterialTheme.typography.titleLarge)
             Text(
                 text = "View all",
                 style = MaterialTheme.typography.bodyMedium,

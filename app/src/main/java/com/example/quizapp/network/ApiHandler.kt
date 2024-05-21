@@ -1,5 +1,6 @@
 package com.example.quizapp.network
 
+import android.util.Log
 import com.example.quizapp.network.response_model.ApiResponse
 import com.example.quizapp.network.response_model.ErrorResponse
 import com.squareup.moshi.Moshi
@@ -27,11 +28,13 @@ interface ApiHandler {
                 val err = adapter.fromJson(
                     response.errorBody()?.charStream()?.readText() ?: "{message:'unknown error'}"
                 )
+                Log.d("error", err?.message ?: "")
                 ApiResponse.Error(err?.message ?: "unknown error")
             }
         } catch (e: HttpException) {
             ApiResponse.Error(e.message())
         } catch (e: Throwable) {
+            Log.d("error", e.message ?: "")
             ApiResponse.Exception(e.message ?: "unknown error")
         }
 

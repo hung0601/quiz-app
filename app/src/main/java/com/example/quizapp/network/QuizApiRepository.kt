@@ -18,6 +18,7 @@ package com.example.quizapp.network
 import com.example.quizapp.model.Course
 import com.example.quizapp.model.CourseDetail
 import com.example.quizapp.model.CourseInvite
+import com.example.quizapp.model.ExamDetail
 import com.example.quizapp.model.Profile
 import com.example.quizapp.model.Search
 import com.example.quizapp.model.StudySet
@@ -26,6 +27,7 @@ import com.example.quizapp.model.Term
 import com.example.quizapp.model.Token
 import com.example.quizapp.network.request_model.LoginRequest
 import com.example.quizapp.network.request_model.StoreStudyRequest
+import com.example.quizapp.network.request_model.SubmitExamRequest
 import com.example.quizapp.network.response_model.ApiResponse
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -74,6 +76,9 @@ interface QuizApiRepository {
     suspend fun searchCourseUsers(courseId: Int, search: String): ApiResponse<List<Profile>>
     suspend fun search(search: String): ApiResponse<Search>
     suspend fun storeStudyResults(results: List<StoreStudyRequest>): ApiResponse<Unit>
+    suspend fun getExam(id: Int): ApiResponse<ExamDetail>
+    suspend fun voteSet(studySetId: Int, star: Int): ApiResponse<Float>
+    suspend fun submitExam(examId: Int, results: List<SubmitExamRequest>): ApiResponse<Unit>
 }
 
 /**
@@ -204,6 +209,27 @@ class NetworkQuizApiRepository(
     override suspend fun storeStudyResults(results: List<StoreStudyRequest>): ApiResponse<Unit> {
         return handleApi {
             quizApiService.storeStudyResults(results)
+        }
+    }
+
+    override suspend fun getExam(id: Int): ApiResponse<ExamDetail> {
+        return handleApi {
+            quizApiService.getExam(id)
+        }
+    }
+
+    override suspend fun voteSet(studySetId: Int, star: Int): ApiResponse<Float> {
+        return handleApi {
+            quizApiService.voteSet(studySetId, star)
+        }
+    }
+
+    override suspend fun submitExam(
+        examId: Int,
+        results: List<SubmitExamRequest>
+    ): ApiResponse<Unit> {
+        return handleApi {
+            quizApiService.submitExam(examId, results)
         }
     }
 }

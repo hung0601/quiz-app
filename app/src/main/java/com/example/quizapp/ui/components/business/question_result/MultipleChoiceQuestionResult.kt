@@ -17,8 +17,8 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.quizapp.model.ExamResult
 import com.example.quizapp.model.MultipleChoiceQuestion
-import com.example.quizapp.ui.screens.exam.ExamResult
 
 @Composable
 fun MultipleChoiceQuestionResult(

@@ -24,6 +24,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
+import com.example.quizapp.ui.components.basic.star_review.StarReview
 import com.example.quizapp.ui.navigation.Screen
 
 
@@ -40,13 +41,17 @@ fun StudySetCard(navController: NavHostController, studySet: StudySet) {
                 .fillMaxWidth()
                 .height(100.dp),
         ) {
-            AsyncImage(
-                model = studySet.imageUrl,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+            if (studySet.imageUrl != null) {
+                AsyncImage(
+                    model = studySet.imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(modifier = Modifier.fillMaxSize())
+            }
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -76,8 +81,14 @@ fun StudySetCard(navController: NavHostController, studySet: StudySet) {
                 text = studySet.title,
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
-                modifier = Modifier.height(48.dp)
+                maxLines = 1,
+                modifier = Modifier.height(25.dp)
+            )
+            StarReview(
+                star = studySet.votesAvgStar ?: 0F,
+                size = 15,
+                disable = true,
+                isShowText = true
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,

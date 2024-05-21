@@ -14,21 +14,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.quizapp.model.ExamResult
 import com.example.quizapp.model.Question
 import com.example.quizapp.model.TypeAnswerQuestion
 import com.example.quizapp.ui.components.basic.textfield.CustomTextField
-import com.example.quizapp.ui.screens.exam.ExamResult
-import com.example.quizapp.ui.screens.exam.ExamViewModel
 
 @Composable
 fun TypeAnswerQuestion(
     question: Question,
     questionDetail: TypeAnswerQuestion,
     handleNext: () -> Unit,
-    examViewModel: ExamViewModel
+    handleAddQuestion: (ExamResult) -> Unit,
 ) {
     val inputValue = remember {
         mutableStateOf("")
+    }
+    val isInput = remember {
+        mutableStateOf(false)
     }
     Column(modifier = Modifier.fillMaxSize()) {
         if (question.hasAudio) {
@@ -47,22 +49,30 @@ fun TypeAnswerQuestion(
         ) {
             CustomTextField(
                 value = inputValue.value,
-                onValueChange = { inputValue.value = it },
-                isError = inputValue.value.isEmpty()
+                onValueChange = {
+                    inputValue.value = it
+                    isInput.value = true
+                },
+                isError = isInput.value && inputValue.value.isEmpty()
             )
         }
-        Button(onClick = {
-            if (inputValue.value.isNotEmpty()) {
-                handleSelectAnswer(
-                    question,
-                    questionDetail,
-                    handleNext,
-                    examViewModel,
-                    inputValue.value
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Button(onClick = {
+                if (inputValue.value.isNotEmpty()) {
+                    handleSelectAnswer(
+                        question,
+                        questionDetail,
+                        handleNext,
+                        handleAddQuestion,
+                        inputValue.value
+                    )
+                }
+            }) {
+                Text(text = "Submit")
             }
-        }) {
-            Text(text = "Submit")
         }
     }
 }
@@ -71,7 +81,7 @@ fun handleSelectAnswer(
     question: Question,
     questionDetail: TypeAnswerQuestion,
     handleNext: () -> Unit,
-    examViewModel: ExamViewModel,
+    handleAddQuestion: (ExamResult) -> Unit,
     selectedAnswer: String,
 ) {
     val isCorrect = if (questionDetail.correctAnswer.compareTo(
@@ -86,8 +96,6 @@ fun handleSelectAnswer(
         questionDetail.correctAnswer,
         isCorrect
     )
-    examViewModel.addResult(
-        result
-    )
+    handleAddQuestion(result)
     handleNext()
 }

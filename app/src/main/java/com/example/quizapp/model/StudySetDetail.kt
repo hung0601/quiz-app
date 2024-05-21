@@ -12,7 +12,11 @@ data class StudySetDetail(
     val termLang: String,
     @SerialName(value = "def_lang")
     val defLang: String,
+    @SerialName(value = "votes_avg_star")
+    val votesAvgStar: Float? = null,
+    val topics: List<Topic>,
     val terms: List<Term>,
+    val exams: List<Exam>,
     val owner: Profile,
     @SerialName(value = "image_url")
     val imageUrl: String?,

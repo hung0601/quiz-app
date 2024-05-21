@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonObject
 data class Question(
     val id: Int = 0,
     @SerialName(value = "term_referent_id")
-    val termReferentId: Int,
+    val termReferentId: Int? = 0,
     @SerialName(value = "has_audio")
     val hasAudio: Boolean = false,
     @SerialName(value = "audio_text")

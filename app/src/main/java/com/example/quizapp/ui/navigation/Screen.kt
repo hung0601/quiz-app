@@ -38,7 +38,7 @@ sealed class Screen(
     }
 
     object Course :
-        Screen(route = "course/{id}", title = "Course Detail", isShowBottomBar = false) {
+        Screen(route = "course/{id}", title = "Collection Detail", isShowBottomBar = false) {
         fun passId(
             id: Int
         ): String {
@@ -61,6 +61,20 @@ sealed class Screen(
             id: Int
         ): String {
             return "exam/$id"
+        }
+    }
+
+    object CustomExam :
+        Screen(
+            route = "custom_exam/{id}",
+            title = "Exam",
+            isShowBottomBar = false,
+            isShowTopBar = false
+        ) {
+        fun passId(
+            id: Int
+        ): String {
+            return "custom_exam/$id"
         }
     }
 
@@ -94,7 +108,7 @@ sealed class Screen(
 
     object CreateCourse : Screen(
         route = "create_course",
-        title = "Create course",
+        title = "Create collection",
         isShowBottomBar = false,
         isShowTopBar = true,
         navigateIconType = 2
@@ -122,6 +136,7 @@ sealed class Screen(
             Course,
             FlashCard,
             Exam,
+            CustomExam,
             Login,
             Profile,
             CreateCourse,

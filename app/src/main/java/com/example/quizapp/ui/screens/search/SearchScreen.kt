@@ -63,6 +63,7 @@ fun SearchScreen(navController: NavHostController) {
                 modifier = Modifier
                     .weight(1f),
                 shape = CircleShape,
+                singleLine = true,
                 placeholder = { Text(text = "Search sets, courses, creators...") },
             )
             IconButton(

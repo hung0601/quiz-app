@@ -31,8 +31,11 @@ data class StudySet(
     val owner: Profile? = null,
     @SerialName(value = "term_number")
     val termNumber: Int = 0,
+    @SerialName(value = "votes_avg_star")
+    val votesAvgStar: Float? = null,
+    val topics: List<Topic>,
     @SerialName(value = "image_url")
-    val imageUrl: String,
+    val imageUrl: String? = null,
     @SerialName(value = "created_at")
     val createdAt: String?,
     @SerialName(value = "updated_at")

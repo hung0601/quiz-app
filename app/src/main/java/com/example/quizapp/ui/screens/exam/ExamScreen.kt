@@ -1,5 +1,6 @@
 package com.example.quizapp.ui.screens.exam
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
@@ -14,17 +15,22 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.quizapp.constant.COUNTDOWN_TIME
 import com.example.quizapp.constant.QuestionType
+import com.example.quizapp.model.ExamResult
 import com.example.quizapp.model.MultipleChoiceQuestion
 import com.example.quizapp.model.Question
 import com.example.quizapp.model.StudySetDetail
@@ -50,8 +58,10 @@ import com.example.quizapp.ui.components.business.question.MultipleChoiceQuestio
 import com.example.quizapp.ui.components.business.question.TrueFalseQuestion
 import com.example.quizapp.ui.components.business.question.TypeAnswerQuestion
 import com.example.quizapp.ui.components.business.result_dialog.QuestionResultDialog
+import com.example.quizapp.ui.components.business.term.TermItem
 import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
@@ -67,7 +77,18 @@ fun ExamScreen(studySet: StudySetDetail, navController: NavController) {
     val step = remember { mutableIntStateOf(1) }
     var openResultDialog by remember { mutableStateOf(false) }
     val storeResultResponse by examViewModel.storeResultResponse.collectAsState()
+    val studySetResponse by examViewModel.studySetResponse.collectAsState()
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = studySetResponse is ResponseHandlerState.Success) {
+        scope.launch {
+            if (studySetResponse is ResponseHandlerState.Success) {
+                examViewModel.randomQuestion()
+                examViewModel.setLoading(false)
+                step.intValue = 1
+            }
+        }
+    }
 
     LaunchedEffect(key1 = storeResultResponse is ResponseHandlerState.Success) {
         scope.launch {
@@ -84,7 +105,10 @@ fun ExamScreen(studySet: StudySetDetail, navController: NavController) {
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.onPrimary)
         ) {
-            IconButton(onClick = { navController.navigate(Screen.StudySet.passId(studySet.id)) }) {
+            IconButton(onClick = {
+                navController.popBackStack(Screen.StudySet.route, true)
+                navController.navigate(Screen.StudySet.passId(studySet.id))
+            }) {
                 Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
             }
         }
@@ -108,33 +132,33 @@ fun ExamScreen(studySet: StudySetDetail, navController: NavController) {
                         style = TextStyle(fontSize = 18.sp)
                     )
                     AnimatedContent(
-                        targetState = uiState.currentTerm,
-                        transitionSpec = {
+                        targetState = uiState.currentTerm, transitionSpec = {
                             if (targetState > initialState) {
-                                slideInHorizontally { width -> width } + fadeIn() with
-                                        slideOutHorizontally { width -> -width }
+                                slideInHorizontally { width -> width } + fadeIn() with slideOutHorizontally { width -> -width }
                             } else {
-                                slideInHorizontally { width -> -width } + fadeIn() with
-                                        slideOutHorizontally { width -> width }
+                                slideInHorizontally { width -> -width } + fadeIn() with slideOutHorizontally { width -> width }
                             }.using(
                                 SizeTransform(clip = false)
                             )
-                        }, label = "",
-                        modifier = Modifier.weight(1F)
+                        }, label = "", modifier = Modifier.weight(1F)
                     ) {
                         QuestionCard(
                             examQuestion = uiState.questionList[it],
                             handleNext = {
                                 openResultDialog = true
                             },
-                            examViewModel = examViewModel
-                        )
+                            handleAddQuestion = {
+                                examViewModel.addResult(it)
+                            })
                     }
 
                 }
             }
         } else {
-            ExamResultScreen(examUiState = uiState)
+            ExamResultScreen(examUiState = uiState, examViewModel, onExit = {
+                navController.popBackStack(Screen.StudySet.route, true)
+                navController.navigate(Screen.StudySet.passId(studySet.id))
+            })
         }
     }
     if (openResultDialog && uiState.currentQuestionResult != null) {
@@ -156,7 +180,9 @@ fun ExamScreen(studySet: StudySetDetail, navController: NavController) {
 }
 
 @Composable
-fun ExamResultScreen(examUiState: ExamUiState) {
+fun ExamResultScreen(
+    examUiState: ExamUiState, examViewModel: ExamViewModel, onExit: () -> Unit
+) {
     var correctAnswers = 0
     examUiState.examResults.forEach {
         if (it.isCorrect) correctAnswers += 1
@@ -173,73 +199,155 @@ fun ExamResultScreen(examUiState: ExamUiState) {
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 20.dp)
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+        Divider(modifier = Modifier.padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 10.dp))
+        LazyColumn(
+            modifier = Modifier.weight(1F),
         ) {
-            Button(onClick = { /*TODO*/ }) {
+            itemsIndexed(examUiState.examResults) { index, result ->
+                val term =
+                    examUiState.studySetDetail.terms.find { it.id == result.question.termReferentId }
+                if (term != null) {
+                    TermItem(
+                        term = term,
+                        modifier = if (result.isCorrect) Modifier else Modifier.background(
+                            Color(0xFFFFCDD2)
+                        )
+                    )
+                    if (index != examUiState.questionList.lastIndex) {
+                        Divider(
+                            modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
+                            thickness = 1.dp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+        }
+        Divider(modifier = Modifier.padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 10.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, end = 20.dp),
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            Button(modifier = Modifier.padding(end = 8.dp), onClick = { onExit() }) {
+                Text(text = "Exit")
+            }
+            Button(modifier = Modifier.padding(start = 8.dp), onClick = {
+                examViewModel.setLoading(true)
+                examViewModel.fetchStudySet()
+            }) {
                 Text(text = "Continue")
             }
         }
-
-//        LazyColumn(
-//            verticalArrangement = Arrangement.spacedBy(10.dp),
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
-//            itemsIndexed(examUiState.examResults) { index, it ->
-//                when (it.question.questionType) {
-//                    QuestionType.MultipleChoiceQuestion.value -> {
-//                        MultipleChoiceQuestionResult(
-//                            index,
-//                            it,
-//                            it.questionDetail as MultipleChoiceQuestion
-//                        )
-//                    }
-//                }
-//            }
-//        }
     }
 }
+
 
 @Composable
 fun QuestionCard(
     examQuestion: Question,
     handleNext: () -> Unit,
-    examViewModel: ExamViewModel
+    handleCountDown: () -> Unit = {},
+    handleAddQuestion: (ExamResult) -> Unit,
+    hasTime: Boolean = false
 ) {
-    val questionDetail: Any?
+    val json = Json { ignoreUnknownKeys = true }
+    var timeLeft by remember { mutableFloatStateOf(0F) }
+    if (hasTime) {
+        LaunchedEffect(key1 = timeLeft, block = {
+            if (timeLeft < COUNTDOWN_TIME) {
+                delay(100L)
+                Log.d("count", timeLeft.toString())
+                timeLeft += 0.1F
+            } else {
+                handleCountDown()
+                handleNext()
+            }
+        })
+    }
+    Column {
+        if (hasTime) {
+            LinearProgressIndicator(
+                progress = (timeLeft.toFloat() / 10),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        when (examQuestion.questionType) {
+            QuestionType.MultipleChoiceQuestion.value -> {
+                val questionDetail =
+                    json.decodeFromString<MultipleChoiceQuestion>(examQuestion.question.toString())
+                MultipleChoiceQuestion(
+                    question = examQuestion,
+                    questionDetail = questionDetail,
+                    handleNext = handleNext,
+                    handleAddQuestion = handleAddQuestion
+                )
+            }
+
+            QuestionType.TypeAnswerQuestion.value -> {
+                val questionDetail =
+                    json.decodeFromString<TypeAnswerQuestion>(examQuestion.question.toString())
+                TypeAnswerQuestion(
+                    question = examQuestion,
+                    questionDetail = questionDetail,
+                    handleNext = handleNext,
+                    handleAddQuestion = handleAddQuestion
+                )
+            }
+
+            QuestionType.TrueFalseQuestion.value -> {
+                val questionDetail =
+                    json.decodeFromString<TrueFalseQuestion>(examQuestion.question.toString())
+                TrueFalseQuestion(
+                    question = examQuestion,
+                    questionDetail = questionDetail,
+                    handleNext = handleNext,
+                    handleAddQuestion = handleAddQuestion
+                )
+            }
+        }
+    }
+}
+
+fun handleCountDown(examQuestion: Question): ExamResult? {
+    val json = Json { ignoreUnknownKeys = true }
     when (examQuestion.questionType) {
         QuestionType.MultipleChoiceQuestion.value -> {
-            questionDetail =
-                Json.decodeFromString<MultipleChoiceQuestion>(examQuestion.question.toString())
-            MultipleChoiceQuestion(
-                question = examQuestion,
-                questionDetail = questionDetail,
-                handleNext = handleNext,
-                examViewModel = examViewModel
+            val questionDetail =
+                json.decodeFromString<MultipleChoiceQuestion>(examQuestion.question.toString())
+            return ExamResult(
+                examQuestion,
+                questionDetail,
+                null,
+                questionDetail.answers[questionDetail.correctAnswer],
+                false
             )
         }
 
         QuestionType.TypeAnswerQuestion.value -> {
-            questionDetail =
-                Json.decodeFromString<TypeAnswerQuestion>(examQuestion.question.toString())
-            TypeAnswerQuestion(
-                question = examQuestion,
-                questionDetail = questionDetail,
-                handleNext = handleNext,
-                examViewModel = examViewModel
+            val questionDetail =
+                json.decodeFromString<TypeAnswerQuestion>(examQuestion.question.toString())
+            return ExamResult(
+                examQuestion,
+                questionDetail,
+                null,
+                questionDetail.correctAnswer,
+                false
             )
         }
 
         QuestionType.TrueFalseQuestion.value -> {
-            questionDetail =
-                Json.decodeFromString<TrueFalseQuestion>(examQuestion.question.toString())
-            TrueFalseQuestion(
-                question = examQuestion,
-                questionDetail = questionDetail,
-                handleNext = handleNext,
-                examViewModel = examViewModel
+            val questionDetail =
+                json.decodeFromString<TrueFalseQuestion>(examQuestion.question.toString())
+            return ExamResult(
+                examQuestion,
+                questionDetail,
+                null,
+                questionDetail.correctAnswer,
+                false
             )
         }
     }
+    return null
 }

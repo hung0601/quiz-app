@@ -17,6 +17,7 @@ import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.UserViewModel
 import com.example.quizapp.ui.screens.course.create.CreateCourseScreen
 import com.example.quizapp.ui.screens.course.detail.CourseDetailScreen
+import com.example.quizapp.ui.screens.custom_exam.CustomExamScreen
 import com.example.quizapp.ui.screens.exam.ExamScreen
 import com.example.quizapp.ui.screens.flash_card.FlashCardScreen
 import com.example.quizapp.ui.screens.home.HomeScreen
@@ -116,7 +117,6 @@ fun NavGraphBuilder.homeNavGraph(
             }
         }
 
-        //Flash card
         composable(
             route = Screen.Exam.route,
             arguments = listOf(
@@ -135,6 +135,17 @@ fun NavGraphBuilder.homeNavGraph(
 
                 else -> Text(text = "error")
             }
+        }
+
+        composable(
+            route = Screen.CustomExam.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            CustomExamScreen(navController = navController)
         }
 
         composable(route = Screen.Profile.route) {

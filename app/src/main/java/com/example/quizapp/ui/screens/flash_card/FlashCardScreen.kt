@@ -98,6 +98,7 @@ fun FlashCardScreen(studySet: StudySetDetail) {
             ) {
                 it
                 FlipCard(term = studySet.terms[it],
+                    lang = studySet.termLang,
                     flashCardModel = flashCardModel,
                     uiState = uiState,
                     onCardClick = {})
@@ -141,6 +142,7 @@ fun FlashCardScreen(studySet: StudySetDetail) {
 @Composable
 fun FlipCard(
     term: Term,
+    lang: String,
     flashCardModel: FlashCardModel,
     uiState: FlashCardUiState,
     onCardClick: () -> Unit,
@@ -218,7 +220,7 @@ fun FlipCard(
                     contentDescription = null,
                     tint = Color(0xff586380),
                     modifier = Modifier.clickable {
-                        flashCardModel.textToSpeech(context, term.term)
+                        flashCardModel.textToSpeech(term.term, lang)
                     }
                 )
             }

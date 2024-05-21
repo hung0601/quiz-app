@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quizapp.constant.QuestionType
+import com.example.quizapp.model.ExamResult
 import com.example.quizapp.model.MultipleChoiceQuestion
 import com.example.quizapp.model.Question
 import com.example.quizapp.model.StudySetDetail
@@ -30,15 +31,14 @@ import kotlin.random.Random
 
 @HiltViewModel(assistedFactory = ExamViewModel.ExamViewModelFactory::class)
 class ExamViewModel @AssistedInject constructor(
-    private val quizApiRepository: QuizApiRepository,
-    @Assisted private val studySet: StudySetDetail
+    private val quizApiRepository: QuizApiRepository, @Assisted private val studySet: StudySetDetail
 ) : ViewModel() {
     @AssistedFactory
     interface ExamViewModelFactory {
         fun create(studySet: StudySetDetail): ExamViewModel
     }
 
-    private var _uiState = MutableStateFlow(ExamUiState())
+    private var _uiState = MutableStateFlow(ExamUiState(studySetDetail = studySet))
     val uiState: StateFlow<ExamUiState> = _uiState.asStateFlow()
 
     private val _storeResultResponse =
@@ -46,19 +46,54 @@ class ExamViewModel @AssistedInject constructor(
     val storeResultResponse: StateFlow<ResponseHandlerState<Unit>> =
         _storeResultResponse.asStateFlow()
 
+    private val _studySetResponse =
+        MutableStateFlow<ResponseHandlerState<StudySetDetail>>(ResponseHandlerState.Init)
+    val studySetResponse: StateFlow<ResponseHandlerState<StudySetDetail>> =
+        _studySetResponse.asStateFlow()
+
     init {
         randomQuestion()
+    }
+
+    fun fetchStudySet() {
+        viewModelScope.launch {
+            _studySetResponse.value = ResponseHandlerState.Loading
+            val response = quizApiRepository.getStudySet(studySet.id)
+            _studySetResponse.value = when (response) {
+                is ApiResponse.Success -> {
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            studySetDetail = response.data,
+                            currentTerm = 0,
+                            currentQuestionResult = null,
+                            questionList = mutableListOf(),
+                            examResults = mutableListOf(),
+                        )
+                    }
+                    Log.d("error", "success")
+                    ResponseHandlerState.Success(response.data)
+                }
+
+                is ApiResponse.Error -> {
+                    Log.d("error", "error: " + response.errorMsg)
+                    ResponseHandlerState.Error(response.errorMsg)
+                }
+
+                is ApiResponse.Exception -> {
+                    Log.d("error", "ex: " + response.errorMsg)
+                    ResponseHandlerState.Error(response.errorMsg)
+                }
+            }
+        }
     }
 
     fun sendResults() {
         viewModelScope.launch {
             val results = uiState.value.examResults.map {
                 StoreStudyRequest(
-                    it.question.termReferentId,
-                    it.isCorrect
+                    it.question.termReferentId!!, it.isCorrect
                 )
             }
-            Log.d("result", results.toString())
             _storeResultResponse.value = ResponseHandlerState.Loading
             val response = quizApiRepository.storeStudyResults(results)
             _storeResultResponse.value = when (response) {
@@ -139,17 +174,16 @@ class ExamViewModel @AssistedInject constructor(
         }
         _uiState.update { currentState ->
             currentState.copy(
-                questionList = questions,
-                isLoading = false
+                questionList = questions, isLoading = false
             )
         }
     }
 
     fun selectTerms(): List<Term> {
         val results: MutableList<Term> = mutableListOf()
-        val notStudyTerms = studySet.terms.filter { it.status == 0 }
+        val notStudyTerms = uiState.value.studySetDetail.terms.filter { it.status == 0 }
 
-        val stillStudyTerms = studySet.terms.filter { it.status == 1 }
+        val stillStudyTerms = uiState.value.studySetDetail.terms.filter { it.status == 1 }
         var stillStudySize = 5
         if (stillStudyTerms.size < 5) {
             stillStudySize = stillStudyTerms.size
@@ -160,7 +194,7 @@ class ExamViewModel @AssistedInject constructor(
         if (notStudyTerms.size < notStudySize) {
             notStudySize = notStudyTerms.size
             results.addAll(notStudyTerms.take(notStudySize))
-            val masterTerms = studySet.terms.filter { it.status == 2 }
+            val masterTerms = uiState.value.studySetDetail.terms.filter { it.status == 2 }
             results.addAll(masterTerms.take(10 - stillStudySize - notStudySize))
         } else {
             results.addAll(notStudyTerms.take(notStudySize))
@@ -172,23 +206,21 @@ class ExamViewModel @AssistedInject constructor(
     fun getMultipleChoiceQuestion(term: Term, hasAudio: Boolean): Question {
         val answers = mutableListOf<String>();
         val correctIndex = Random.nextInt(1, 5)
-        var index = Random.nextInt(0, studySet.terms.size)
+        var index = Random.nextInt(0, uiState.value.studySetDetail.terms.size)
         for (i in 1..4) {
             if (correctIndex == i) {
                 answers.add(
                     term.definition
                 )
             } else {
-                while (answers.contains(studySet.terms[index].definition) || studySet.terms[index].id == term.id) {
-                    index = Random.nextInt(0, studySet.terms.size)
+                while (answers.contains(uiState.value.studySetDetail.terms[index].definition) || uiState.value.studySetDetail.terms[index].id == term.id) {
+                    index = Random.nextInt(0, uiState.value.studySetDetail.terms.size)
                 }
-                answers.add(studySet.terms[index].definition)
+                answers.add(uiState.value.studySetDetail.terms[index].definition)
             }
         }
         val multipleChoiceQuestion = MultipleChoiceQuestion(
-            answers = answers,
-            correctAnswer = correctIndex - 1,
-            question = term.term
+            answers = answers, correctAnswer = correctIndex - 1, question = term.term
         )
         return Question(
             hasAudio = hasAudio,
@@ -203,15 +235,14 @@ class ExamViewModel @AssistedInject constructor(
     fun getTrueFalseQuestion(term: Term, hasAudio: Boolean): Question {
         var wrongTermIndex = 0
         do {
-            wrongTermIndex = Random.nextInt(0, studySet.terms.size)
-        } while (studySet.terms[wrongTermIndex].id == term.id)
+            wrongTermIndex = Random.nextInt(0, uiState.value.studySetDetail.terms.size)
+        } while (uiState.value.studySetDetail.terms[wrongTermIndex].id == term.id)
         val correctAnswer = Random.nextBoolean()
         val question =
-            if (correctAnswer) "${term.term} is ${term.definition} ?" else "${term.term} is ${studySet.terms[wrongTermIndex].definition} ?"
+            if (correctAnswer) "${term.term} is ${term.definition} ?" else "${term.term} is ${uiState.value.studySetDetail.terms[wrongTermIndex].definition} ?"
 
         val trueFalseQuestion = TrueFalseQuestion(
-            correctAnswer = correctAnswer,
-            question = question
+            correctAnswer = correctAnswer, question = question
         )
         return Question(
             hasAudio = false,
