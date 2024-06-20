@@ -3,7 +3,7 @@ package com.example.quizapp.ui.screens.course.detail
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.quizapp.model.Profile
+import com.example.quizapp.model.MyProfile
 import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.response_model.ApiResponse
 import com.example.quizapp.network.response_model.ResponseHandlerState
@@ -20,8 +20,8 @@ class SearchUserViewModel @Inject constructor(
     private val quizApiRepository: QuizApiRepository,
 ) : ViewModel() {
     private val _searchUsers =
-        MutableStateFlow<ResponseHandlerState<List<Profile>>>(ResponseHandlerState.Init)
-    val searchUsers: StateFlow<ResponseHandlerState<List<Profile>>> = _searchUsers.asStateFlow()
+        MutableStateFlow<ResponseHandlerState<List<MyProfile>>>(ResponseHandlerState.Init)
+    val searchUsers: StateFlow<ResponseHandlerState<List<MyProfile>>> = _searchUsers.asStateFlow()
 
     private var _inviteResponse =
         MutableStateFlow<ResponseHandlerState<Unit>>(ResponseHandlerState.Init)

@@ -4,15 +4,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Course(
+data class MyProfile(
     val id: Int,
-    val title: String,
-    val description: String,
-    val owner: MyProfile,
-    @SerialName(value = "enrollments_count")
-    val enrollmentsCount: Int,
+    val name: String,
+    val email: String,
+    @SerialName(value = "image_url")
+    val imageUrl: String?,
+    @SerialName(value = "courses_count")
+    val coursesCount: Int? = 0,
     @SerialName(value = "study_sets_count")
-    val studySetCount: Int,
+    val studySetsCount: Int? = 0,
     @SerialName(value = "created_at")
     val createdAt: String?,
     @SerialName(value = "updated_at")

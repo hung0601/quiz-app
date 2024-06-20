@@ -85,12 +85,26 @@ sealed class Screen(
         isShowTopBar = false
     )
 
-    object Profile : Screen(
-        route = "profile_screen",
-        title = "Profile Screen",
+    object MyProfile : Screen(
+        route = "my_profile_screen",
+        title = "Profile",
         isShowBottomBar = true,
         isShowTopBar = true
     )
+
+    object Profile : Screen(
+        route = "profile_screen/{id}",
+        title = "Profile",
+        isShowBottomBar = true,
+        isShowTopBar = true
+
+    ) {
+        fun passId(
+            id: Int
+        ): String {
+            return "profile_screen/$id"
+        }
+    }
 
     object Notification : Screen(
         route = "notification",
@@ -138,6 +152,7 @@ sealed class Screen(
             Exam,
             CustomExam,
             Login,
+            MyProfile,
             Profile,
             CreateCourse,
             CreateStudySet,

@@ -18,8 +18,9 @@ package com.example.quizapp.network
 import com.example.quizapp.model.Course
 import com.example.quizapp.model.CourseDetail
 import com.example.quizapp.model.CourseInvite
+import com.example.quizapp.model.CreatorProfile
 import com.example.quizapp.model.ExamDetail
-import com.example.quizapp.model.Profile
+import com.example.quizapp.model.MyProfile
 import com.example.quizapp.model.Search
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.model.StudySetDetail
@@ -42,7 +43,12 @@ interface QuizApiRepository {
     /** Fetches list of MarsPhoto from marsApi */
     suspend fun login(loginRequest: LoginRequest): ApiResponse<Token>
 
-    suspend fun getTopCreators(): ApiResponse<List<Profile>>
+    suspend fun getTopCreators(): ApiResponse<List<MyProfile>>
+    suspend fun getMyProfile(): ApiResponse<MyProfile>
+    suspend fun getProfile(userId: Int): ApiResponse<CreatorProfile>
+    suspend fun getSetsByUser(userId: Int): ApiResponse<List<StudySet>>
+    suspend fun getCoursesByUser(userId: Int): ApiResponse<List<Course>>
+    suspend fun getFollowers(userId: Int? = null): ApiResponse<List<CreatorProfile>>
     suspend fun getCourses(): ApiResponse<List<Course>>
     suspend fun getStudySets(): ApiResponse<List<StudySet>>
     suspend fun getCreatedSets(): ApiResponse<List<StudySet>>
@@ -73,12 +79,14 @@ interface QuizApiRepository {
         type: String
     ): ApiResponse<Unit>
 
-    suspend fun searchCourseUsers(courseId: Int, search: String): ApiResponse<List<Profile>>
+    suspend fun searchCourseUsers(courseId: Int, search: String): ApiResponse<List<MyProfile>>
     suspend fun search(search: String): ApiResponse<Search>
     suspend fun storeStudyResults(results: List<StoreStudyRequest>): ApiResponse<Unit>
     suspend fun getExam(id: Int): ApiResponse<ExamDetail>
     suspend fun voteSet(studySetId: Int, star: Int): ApiResponse<Float>
     suspend fun submitExam(examId: Int, results: List<SubmitExamRequest>): ApiResponse<Unit>
+    suspend fun followUser(userId: Int): ApiResponse<Unit>
+    suspend fun unFollow(userId: Int): ApiResponse<Unit>
 }
 
 /**
@@ -92,8 +100,28 @@ class NetworkQuizApiRepository(
         return handleApi { quizApiService.login(loginRequest.email, loginRequest.password) }
     }
 
-    override suspend fun getTopCreators(): ApiResponse<List<Profile>> =
+    override suspend fun getTopCreators(): ApiResponse<List<MyProfile>> =
         handleApi { quizApiService.getTopCreators() }
+
+    override suspend fun getMyProfile(): ApiResponse<MyProfile> {
+        return handleApi { quizApiService.getMyProfile() }
+    }
+
+    override suspend fun getSetsByUser(userId: Int): ApiResponse<List<StudySet>> {
+        return handleApi { quizApiService.getSetsByUser(userId) }
+    }
+
+    override suspend fun getCoursesByUser(userId: Int): ApiResponse<List<Course>> {
+        return handleApi { quizApiService.getCoursesByUser(userId) }
+    }
+
+    override suspend fun getFollowers(userId: Int?): ApiResponse<List<CreatorProfile>> {
+        return handleApi { quizApiService.getFollowers(userId) }
+    }
+
+    override suspend fun getProfile(userId: Int): ApiResponse<CreatorProfile> {
+        return handleApi { quizApiService.getProfile(userId) }
+    }
 
     override suspend fun getCourses(): ApiResponse<List<Course>> =
         handleApi { quizApiService.getCourses() }
@@ -194,7 +222,7 @@ class NetworkQuizApiRepository(
     override suspend fun searchCourseUsers(
         courseId: Int,
         search: String
-    ): ApiResponse<List<Profile>> {
+    ): ApiResponse<List<MyProfile>> {
         return handleApi {
             quizApiService.searchCourseUser(courseId, search)
         }
@@ -230,6 +258,18 @@ class NetworkQuizApiRepository(
     ): ApiResponse<Unit> {
         return handleApi {
             quizApiService.submitExam(examId, results)
+        }
+    }
+
+    override suspend fun followUser(userId: Int): ApiResponse<Unit> {
+        return handleApi {
+            quizApiService.followUser(userId)
+        }
+    }
+
+    override suspend fun unFollow(userId: Int): ApiResponse<Unit> {
+        return handleApi {
+            quizApiService.unFollow(userId)
         }
     }
 }

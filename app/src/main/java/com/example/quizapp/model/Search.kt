@@ -8,5 +8,5 @@ data class Search(
     val courses: List<Course>,
     @SerialName(value = "study_sets")
     val studySets: List<StudySet>,
-    val creators: List<Profile>
+    val creators: List<MyProfile>
 )

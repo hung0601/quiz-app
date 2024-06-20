@@ -9,7 +9,7 @@ data class CourseDetail(
     val id: Int,
     val title: String,
     val description: String,
-    val owner: Profile,
+    val owner: MyProfile,
     val enrollments: List<Enrollment>,
     @SerialName(value = "study_sets")
     val studySets: List<StudySet>,

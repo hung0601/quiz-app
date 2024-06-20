@@ -44,7 +44,7 @@ sealed class BottomBarScreen(
     )
 
     object Profile : BottomBarScreen(
-        route = Screen.Profile.route,
+        route = Screen.MyProfile.route,
         title = "Profile",
         icon = Icons.Default.Person
     )

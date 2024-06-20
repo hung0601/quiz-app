@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quizapp.model.Course
 import com.example.quizapp.model.CourseInvite
-import com.example.quizapp.model.Profile
+import com.example.quizapp.model.MyProfile
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.response_model.ApiResponse
@@ -31,8 +31,8 @@ class HomeViewModel @Inject constructor(
     val courseList: StateFlow<ResponseHandlerState<List<Course>>> = _courseList.asStateFlow()
 
     private val _creatorList =
-        MutableStateFlow<ResponseHandlerState<List<Profile>>>(ResponseHandlerState.Loading)
-    val creatorList: StateFlow<ResponseHandlerState<List<Profile>>> = _creatorList.asStateFlow()
+        MutableStateFlow<ResponseHandlerState<List<MyProfile>>>(ResponseHandlerState.Loading)
+    val creatorList: StateFlow<ResponseHandlerState<List<MyProfile>>> = _creatorList.asStateFlow()
 
     private val _inviteList =
         MutableStateFlow<ResponseHandlerState<List<CourseInvite>>>(ResponseHandlerState.Loading)

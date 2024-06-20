@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Profile(
+data class CreatorProfile(
     val id: Int,
     val name: String,
     val email: String,
@@ -14,6 +14,10 @@ data class Profile(
     val coursesCount: Int? = 0,
     @SerialName(value = "study_sets_count")
     val studySetsCount: Int? = 0,
+    @SerialName(value = "followers_count")
+    val followersCount: Int? = 0,
+    @SerialName(value = "is_following")
+    val isFollowing: Boolean = false,
     @SerialName(value = "created_at")
     val createdAt: String?,
     @SerialName(value = "updated_at")

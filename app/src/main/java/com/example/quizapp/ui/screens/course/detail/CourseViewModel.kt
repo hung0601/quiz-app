@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.quizapp.data.session.SessionCache
 import com.example.quizapp.model.CourseDetail
 import com.example.quizapp.network.QuizApiRepository
-import com.example.quizapp.network.response_model.ApiResponse
 import com.example.quizapp.network.response_model.ResponseHandlerState
+import com.example.quizapp.util.handleResponseState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,19 +37,7 @@ class CourseViewModel @Inject constructor(
         viewModelScope.launch {
             _courseDetail.value = ResponseHandlerState.Loading
             val response = quizApiRepository.getCourse(itemId)
-            _courseDetail.value = when (response) {
-                is ApiResponse.Success -> {
-                    ResponseHandlerState.Success(response.data)
-                }
-
-                is ApiResponse.Error -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-
-                is ApiResponse.Exception -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-            }
+            _courseDetail.value = handleResponseState(response)
         }
     }
 }

@@ -23,7 +23,8 @@ import com.example.quizapp.ui.screens.flash_card.FlashCardScreen
 import com.example.quizapp.ui.screens.home.HomeScreen
 import com.example.quizapp.ui.screens.library.LibraryScreen
 import com.example.quizapp.ui.screens.notification.NotificationScreen
-import com.example.quizapp.ui.screens.profile.ProfileScreen
+import com.example.quizapp.ui.screens.profile.CreatorProfileScreen
+import com.example.quizapp.ui.screens.profile.MyProfileScreen
 import com.example.quizapp.ui.screens.search.SearchScreen
 import com.example.quizapp.ui.screens.set_detail.SetDetailModel
 import com.example.quizapp.ui.screens.set_detail.SetDetailScreen
@@ -148,8 +149,19 @@ fun NavGraphBuilder.homeNavGraph(
             CustomExamScreen(navController = navController)
         }
 
-        composable(route = Screen.Profile.route) {
-            ProfileScreen(navController = navController)
+        composable(route = Screen.MyProfile.route) {
+            MyProfileScreen(navController = navController)
+        }
+
+        composable(
+            route = Screen.Profile.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            CreatorProfileScreen(navController = navController)
         }
 
         composable(route = Screen.CreateCourse.route) {

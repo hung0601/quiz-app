@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CourseInvite(
-    val owner: Profile,
+    val owner: MyProfile,
     @SerialName(value = "course_id")
     val courseId: Int,
     @SerialName(value = "course_title")

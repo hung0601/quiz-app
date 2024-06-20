@@ -1,5 +1,6 @@
 package com.example.quizapp.ui.components.basic.card
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,13 +19,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.quizapp.R
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
 import com.example.quizapp.ui.components.basic.star_review.StarReview
+import com.example.quizapp.ui.components.business.access_type.AccessType
 import com.example.quizapp.ui.navigation.Screen
 
 
@@ -50,21 +54,27 @@ fun StudySetCard(navController: NavHostController, studySet: StudySet) {
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Box(modifier = Modifier.fillMaxSize())
+                Image(
+                    painter = painterResource(id = R.drawable.default_set_image),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
             }
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 5.dp, bottom = 5.dp)
                     .background(
-                        MaterialTheme.colorScheme.tertiary,
+                        MaterialTheme.colorScheme.primary,
                         RoundedCornerShape(5.dp)
                     )
             ) {
                 Text(
                     text = studySet.termNumber.toString() + " terms",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onTertiary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.padding(3.dp)
                 )
             }
@@ -84,12 +94,18 @@ fun StudySetCard(navController: NavHostController, studySet: StudySet) {
                 maxLines = 1,
                 modifier = Modifier.height(25.dp)
             )
-            StarReview(
-                star = studySet.votesAvgStar ?: 0F,
-                size = 15,
-                disable = true,
-                isShowText = true
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                StarReview(
+                    star = studySet.votesAvgStar ?: 0F,
+                    size = 15,
+                    disable = true,
+                    isShowText = true
+                )
+                AccessType(accessType = studySet.accessType)
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
@@ -134,26 +150,36 @@ fun StudySetItem(
                 modifier = Modifier
                     .width(120.dp)
             ) {
-                AsyncImage(
-                    model = studySet.imageUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                if (studySet.imageUrl !== null) {
+                    AsyncImage(
+                        model = studySet.imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.default_set_image),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(end = 5.dp, bottom = 5.dp)
                         .background(
-                            MaterialTheme.colorScheme.tertiary,
+                            MaterialTheme.colorScheme.primary,
                             RoundedCornerShape(5.dp)
                         )
                 ) {
                     Text(
                         text = studySet.termNumber.toString() + " terms",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onTertiary,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(3.dp)
                     )
                 }
@@ -184,21 +210,24 @@ fun StudySetItem(
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    CircleAvatar(
-                        avatarImg = studySet.owner?.imageUrl,
-                        name = studySet.owner?.name ?: "",
-                        modifier = Modifier.size(20.dp, 20.dp)
-                    )
-                    Box(
-                        modifier = Modifier.weight(3f)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
+                        CircleAvatar(
+                            avatarImg = studySet.owner?.imageUrl,
+                            name = studySet.owner?.name ?: "",
+                            modifier = Modifier.size(20.dp, 20.dp)
+                        )
                         Text(
                             text = studySet.owner?.name ?: "",
                             style = MaterialTheme.typography.labelSmall
                         )
                     }
+                    AccessType(accessType = studySet.accessType)
                 }
             }
         }

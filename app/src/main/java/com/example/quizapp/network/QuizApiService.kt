@@ -19,8 +19,9 @@ package com.example.quizapp.network
 import com.example.quizapp.model.Course
 import com.example.quizapp.model.CourseDetail
 import com.example.quizapp.model.CourseInvite
+import com.example.quizapp.model.CreatorProfile
 import com.example.quizapp.model.ExamDetail
-import com.example.quizapp.model.Profile
+import com.example.quizapp.model.MyProfile
 import com.example.quizapp.model.Search
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.model.StudySetDetail
@@ -31,6 +32,7 @@ import com.example.quizapp.network.request_model.SubmitExamRequest
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -56,7 +58,22 @@ interface QuizApiService {
 
 
     @GET("user/top_creators")
-    suspend fun getTopCreators(): Response<List<Profile>>
+    suspend fun getTopCreators(): Response<List<MyProfile>>
+
+    @GET("user/me")
+    suspend fun getMyProfile(): Response<MyProfile>
+
+    @GET("user/{id}")
+    suspend fun getProfile(@Path("id") userId: Int): Response<CreatorProfile>
+
+    @GET("user/{id}/sets")
+    suspend fun getSetsByUser(@Path("id") userId: Int): Response<List<StudySet>>
+
+    @GET("user/{id}/courses")
+    suspend fun getCoursesByUser(@Path("id") userId: Int): Response<List<Course>>
+
+    @GET("followers")
+    suspend fun getFollowers(@Query("user_id") userId: Int? = null): Response<List<CreatorProfile>>
 
     @GET("courses")
     suspend fun getCourses(): Response<List<Course>>
@@ -115,7 +132,7 @@ interface QuizApiService {
     suspend fun searchCourseUser(
         @Query("course_id") courseId: Int,
         @Query("search") search: String,
-    ): Response<List<Profile>>
+    ): Response<List<MyProfile>>
 
     @GET("search")
     suspend fun search(
@@ -142,5 +159,15 @@ interface QuizApiService {
     suspend fun submitExam(
         @Path("id") examId: Int,
         @Body body: List<SubmitExamRequest>
+    ): Response<Unit>
+
+    @POST("followers/{id}")
+    suspend fun followUser(
+        @Path("id") userId: Int,
+    ): Response<Unit>
+
+    @DELETE("followers/{id}")
+    suspend fun unFollow(
+        @Path("id") userId: Int,
     ): Response<Unit>
 }

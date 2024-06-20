@@ -14,7 +14,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -73,6 +72,7 @@ import com.example.quizapp.ui.components.basic.dialog.VoteDialog
 import com.example.quizapp.ui.components.basic.star_review.StarReview
 import com.example.quizapp.ui.components.basic.tag.CustomTag
 import com.example.quizapp.ui.components.basic.textfield.CustomTextField
+import com.example.quizapp.ui.components.business.access_type.AccessType
 import com.example.quizapp.ui.components.business.exam.ExamListDialog
 import com.example.quizapp.ui.components.business.term.TermItem
 import com.example.quizapp.ui.navigation.Screen
@@ -218,22 +218,23 @@ fun DetailScreen(
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    modifier = Modifier.padding(top = 10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(15.dp),
                 ) {
-                    CircleAvatar(
-                        avatarImg = studySet.owner.imageUrl,
-                        name = studySet.owner.name,
-                        modifier = Modifier.size(20.dp, 20.dp)
-                    )
-                    Box(
-                        modifier = Modifier.weight(3f)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
                     ) {
+                        CircleAvatar(
+                            avatarImg = studySet.owner.imageUrl,
+                            name = studySet.owner.name,
+                            modifier = Modifier.size(20.dp, 20.dp)
+                        )
                         Text(
                             text = studySet.owner.name,
                             style = MaterialTheme.typography.labelSmall
                         )
                     }
+                    AccessType(accessType = studySet.accessType)
                 }
                 Divider(
                     modifier = Modifier.padding(

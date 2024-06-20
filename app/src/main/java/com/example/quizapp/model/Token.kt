@@ -12,5 +12,5 @@ data class Token(
     val accessToken: String,
     @SerialName(value = "token_type")
     val tokenType: String,
-    val user: Profile,
+    val user: MyProfile,
 )

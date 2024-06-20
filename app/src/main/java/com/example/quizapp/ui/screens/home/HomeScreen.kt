@@ -68,7 +68,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.quizapp.R
 import com.example.quizapp.model.Course
 import com.example.quizapp.model.CourseInvite
-import com.example.quizapp.model.Profile
+import com.example.quizapp.model.MyProfile
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.network.response_model.ResponseHandlerState
 import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
@@ -147,7 +147,7 @@ fun HomeScreen(
                     is ResponseHandlerState.Success -> {
                         TopCreatesList(
                             navController,
-                            (creatorList as ResponseHandlerState.Success<List<Profile>>).data
+                            (creatorList as ResponseHandlerState.Success<List<MyProfile>>).data
                         )
                     }
 
@@ -169,7 +169,7 @@ fun HomeScreen(
 @Composable
 fun TopCreatesList(
     navController: NavHostController,
-    creatorList: List<Profile>
+    creatorList: List<MyProfile>
 ) {
     Column(
         modifier = Modifier
@@ -209,11 +209,12 @@ fun TopCreatesList(
 @Composable
 fun TopCreatorCard(
     navController: NavHostController,
-    creator: Profile,
+    creator: MyProfile,
 ) {
     CustomCard(
         modifier = Modifier
-            .width(200.dp)
+            .width(200.dp),
+        onClick = { navController.navigate(Screen.Profile.passId(creator.id)) }
 
     ) {
         Column(

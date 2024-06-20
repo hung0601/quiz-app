@@ -50,7 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.quizapp.model.CourseDetail
 import com.example.quizapp.model.Enrollment
-import com.example.quizapp.model.Profile
+import com.example.quizapp.model.MyProfile
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.network.response_model.ResponseHandlerState
 import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
@@ -229,7 +229,7 @@ fun MemberList(
 @Composable
 fun UserSearchList(
     navController: NavController,
-    members: List<Profile>,
+    members: List<MyProfile>,
     searchUserViewModel: SearchUserViewModel,
     course: CourseDetail
 ) {
@@ -321,7 +321,7 @@ fun InviteDialog(
                     is ResponseHandlerState.Success -> {
                         UserSearchList(
                             navController = navController,
-                            members = (searchUsers as ResponseHandlerState.Success<List<Profile>>).data,
+                            members = (searchUsers as ResponseHandlerState.Success<List<MyProfile>>).data,
                             searchUserViewModel,
                             course
                         )

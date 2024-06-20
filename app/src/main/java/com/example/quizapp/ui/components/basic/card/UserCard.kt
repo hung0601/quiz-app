@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.quizapp.model.Profile
+import com.example.quizapp.model.MyProfile
 import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
 
 
@@ -20,7 +20,7 @@ import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
 fun MemberItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
-    member: Profile,
+    member: MyProfile,
 ) {
     CustomCard(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -45,8 +45,6 @@ fun MemberItem(
             }
 
         }
-
-
     }
 }
 
