@@ -1,6 +1,6 @@
 package com.example.quizapp.di
 
-import com.example.quizapp.data.session.SessionCache
+import com.example.quizapp.data.local.SessionCache
 import com.example.quizapp.network.NetworkQuizApiRepository
 import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.QuizApiService

@@ -3,13 +3,13 @@ package com.example.quizapp.ui.screens.profile
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.quizapp.data.session.SessionCache
+import com.example.quizapp.data.local.SessionCache
 import com.example.quizapp.model.Course
 import com.example.quizapp.model.CreatorProfile
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.response_model.ResponseHandlerState
-import com.example.quizapp.util.handleResponseState
+import com.example.quizapp.utils.handleResponseState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow

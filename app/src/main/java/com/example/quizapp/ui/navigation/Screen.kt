@@ -64,6 +64,20 @@ sealed class Screen(
         }
     }
 
+    object MatchGame :
+        Screen(
+            route = "match_game/{id}",
+            title = "Match game",
+            isShowBottomBar = false,
+            isShowTopBar = false
+        ) {
+        fun passId(
+            id: Int
+        ): String {
+            return "match_game/$id"
+        }
+    }
+
     object CustomExam :
         Screen(
             route = "custom_exam/{id}",
@@ -150,6 +164,7 @@ sealed class Screen(
             Course,
             FlashCard,
             Exam,
+            MatchGame,
             CustomExam,
             Login,
             MyProfile,

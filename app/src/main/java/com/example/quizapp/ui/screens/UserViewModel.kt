@@ -1,8 +1,8 @@
 package com.example.quizapp.ui.screens
 
 import androidx.lifecycle.ViewModel
-import com.example.quizapp.data.session.Session
-import com.example.quizapp.data.session.SessionCache
+import com.example.quizapp.data.local.Session
+import com.example.quizapp.data.local.SessionCache
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

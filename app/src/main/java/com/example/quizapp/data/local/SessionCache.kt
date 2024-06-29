@@ -1,4 +1,4 @@
-package com.example.quizapp.data.session
+package com.example.quizapp.data.local
 
 interface SessionCache {
     fun saveSession(session: Session)

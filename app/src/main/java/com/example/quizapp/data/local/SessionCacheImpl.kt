@@ -1,4 +1,4 @@
-package com.example.quizapp.data.session
+package com.example.quizapp.data.local
 
 import android.content.SharedPreferences
 import com.squareup.moshi.Moshi
@@ -16,16 +16,16 @@ class SessionCacheImpl @Inject constructor(
 
     override fun saveSession(session: Session) {
         sharedPreferences.edit()
-            .putString("session", adapter.toJson(session))
+            .putString("local", adapter.toJson(session))
             .apply()
     }
 
     override fun getActiveSession(): Session? {
-        val json = sharedPreferences.getString("session", null) ?: return null
+        val json = sharedPreferences.getString("local", null) ?: return null
         return adapter.fromJson(json)
     }
 
     override fun clearSession() {
-        sharedPreferences.edit().remove("session").apply()
+        sharedPreferences.edit().remove("local").apply()
     }
 }

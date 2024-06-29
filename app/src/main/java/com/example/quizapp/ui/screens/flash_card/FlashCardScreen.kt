@@ -21,18 +21,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -57,6 +57,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
+import com.example.quizapp.ui.theme.md_theme_error
+import com.example.quizapp.ui.theme.md_theme_success
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -79,7 +81,7 @@ fun FlashCardScreen(studySet: StudySetDetail) {
         ) {
             Text(
                 text = (uiState.currentTerm + 1).toString() + "/" + studySet.terms.size.toString(),
-                style = TextStyle(fontSize = 18.sp)
+                style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
             )
             AnimatedContent(
                 targetState = uiState.currentTerm,
@@ -94,7 +96,9 @@ fun FlashCardScreen(studySet: StudySetDetail) {
                         SizeTransform(clip = false)
                     )
                 }, label = "",
-                modifier = Modifier.weight(1F)
+                modifier = Modifier
+                    .weight(1F)
+                    .padding(10.dp)
             ) {
                 it
                 FlipCard(term = studySet.terms[it],
@@ -107,38 +111,46 @@ fun FlashCardScreen(studySet: StudySetDetail) {
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                IconButton(onClick = {
-                    flashCardModel.setCurrentTerm(
-                        getPrevTerm(
-                            studySet.terms,
-                            uiState.currentTerm
-                        )
-                    )
-                }) {
-                    Icon(Icons.Outlined.ArrowBack, contentDescription = "Back button")
-                }
-                IconButton(onClick = {
-                    flashCardModel.setCurrentTerm(
-                        getNextTerm(
-                            studySet.terms,
-                            uiState.currentTerm
-                        )
-                    )
-                }) {
-                    Icon(Icons.Outlined.ArrowForward, contentDescription = "Next button")
-                }
+
+                Icon(
+                    Icons.Outlined.Close,
+                    contentDescription = "Back button",
+                    tint = md_theme_error,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clickable {
+                            flashCardModel.setCurrentTerm(
+                                getPrevTerm(
+                                    studySet.terms,
+                                    uiState.currentTerm
+                                )
+                            )
+                        }
+                )
+                Icon(
+                    Icons.Outlined.Check,
+                    contentDescription = "Next button",
+                    tint = md_theme_success,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clickable {
+                            flashCardModel.setCurrentTerm(
+                                getNextTerm(
+                                    studySet.terms,
+                                    uiState.currentTerm
+                                )
+                            )
+                        }
+                )
             }
         }
     }
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlipCard(
     term: Term,
@@ -211,17 +223,21 @@ fun FlipCard(
                     if (isLike) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     contentDescription = null,
                     tint = Color(0xffE35454),
-                    modifier = Modifier.clickable { isLike = !isLike }
+                    modifier = Modifier
+                        .clickable { isLike = !isLike }
+                        .size(30.dp)
                 )
             }
             if (!rotated) {
                 Icon(
-                    Icons.Outlined.PlayArrow,
+                    Icons.Outlined.VolumeUp,
                     contentDescription = null,
                     tint = Color(0xff586380),
-                    modifier = Modifier.clickable {
-                        flashCardModel.textToSpeech(term.term, lang)
-                    }
+                    modifier = Modifier
+                        .clickable {
+                            flashCardModel.textToSpeech(term.term, lang)
+                        }
+                        .size(35.dp)
                 )
             }
 

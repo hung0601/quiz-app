@@ -1,6 +1,7 @@
 package com.example.quizapp.model
 
-import com.example.quizapp.constant.PUBLIC_ACCESS
+import com.example.quizapp.constants.PUBLIC_ACCESS
+import com.example.quizapp.constants.VIEW_ACCESS_LEVEL
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -17,6 +18,7 @@ data class StudySetDetail(
     val accessType: Int = PUBLIC_ACCESS,
     @SerialName(value = "votes_avg_star")
     val votesAvgStar: Float? = null,
+    val permission: Int = VIEW_ACCESS_LEVEL,
     val topics: List<Topic>,
     val terms: List<Term>,
     val exams: List<Exam>,

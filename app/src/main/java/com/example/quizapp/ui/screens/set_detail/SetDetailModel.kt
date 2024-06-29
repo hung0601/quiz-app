@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.quizapp.data.session.SessionCache
+import com.example.quizapp.data.local.SessionCache
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.response_model.ApiResponse

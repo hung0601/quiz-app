@@ -2,8 +2,8 @@ package com.example.quizapp.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.quizapp.data.session.Session
-import com.example.quizapp.data.session.SessionCache
+import com.example.quizapp.data.local.Session
+import com.example.quizapp.data.local.SessionCache
 import com.example.quizapp.model.Token
 import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.request_model.LoginRequest

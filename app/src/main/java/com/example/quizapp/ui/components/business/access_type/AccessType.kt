@@ -14,9 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.quizapp.constant.PRIVATE_ACCESS
-import com.example.quizapp.constant.PUBLIC_ACCESS
-import com.example.quizapp.constant.SHARE_WITH_FOLLOWER_ACCESS
+import com.example.quizapp.constants.PRIVATE_ACCESS
+import com.example.quizapp.constants.PUBLIC_ACCESS
+import com.example.quizapp.constants.SHARE_WITH_FOLLOWER_ACCESS
 
 @Composable
 fun AccessType(modifier: Modifier = Modifier, accessType: Int = PUBLIC_ACCESS) {

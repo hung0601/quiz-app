@@ -20,6 +20,7 @@ import com.example.quizapp.ui.screens.course.detail.CourseDetailScreen
 import com.example.quizapp.ui.screens.custom_exam.CustomExamScreen
 import com.example.quizapp.ui.screens.exam.ExamScreen
 import com.example.quizapp.ui.screens.flash_card.FlashCardScreen
+import com.example.quizapp.ui.screens.game.MatchGameScreen
 import com.example.quizapp.ui.screens.home.HomeScreen
 import com.example.quizapp.ui.screens.library.LibraryScreen
 import com.example.quizapp.ui.screens.notification.NotificationScreen
@@ -130,6 +131,26 @@ fun NavGraphBuilder.homeNavGraph(
             val studySetUiState: StudySetUiState = viewModel.uiState
             when (studySetUiState) {
                 is StudySetUiState.Success -> ExamScreen(
+                    studySet = studySetUiState.studySet,
+                    navController = navController
+                )
+
+                else -> Text(text = "error")
+            }
+        }
+
+        composable(
+            route = Screen.MatchGame.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            val viewModel = it.sharedViewModel<SetDetailModel>(navController)
+            val studySetUiState: StudySetUiState = viewModel.uiState
+            when (studySetUiState) {
+                is StudySetUiState.Success -> MatchGameScreen(
                     studySet = studySetUiState.studySet,
                     navController = navController
                 )

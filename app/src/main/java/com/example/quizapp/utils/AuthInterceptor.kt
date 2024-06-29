@@ -1,6 +1,6 @@
-package com.example.quizapp.util
+package com.example.quizapp.utils
 
-import com.example.quizapp.data.session.SessionCache
+import com.example.quizapp.data.local.SessionCache
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject

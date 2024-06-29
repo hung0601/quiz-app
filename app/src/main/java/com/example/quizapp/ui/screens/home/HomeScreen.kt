@@ -305,7 +305,7 @@ fun CourseList(
                 .fillMaxWidth()
                 .padding(start = 20.dp, end = 20.dp),
         ) {
-            Text(text = "Collections", style = MaterialTheme.typography.titleLarge)
+            Text(text = "Courses", style = MaterialTheme.typography.titleLarge)
             Text(
                 text = "View all",
                 style = MaterialTheme.typography.bodyMedium,

@@ -21,6 +21,7 @@ import com.example.quizapp.model.CourseDetail
 import com.example.quizapp.model.CourseInvite
 import com.example.quizapp.model.CreatorProfile
 import com.example.quizapp.model.ExamDetail
+import com.example.quizapp.model.Member
 import com.example.quizapp.model.MyProfile
 import com.example.quizapp.model.Search
 import com.example.quizapp.model.StudySet
@@ -170,4 +171,32 @@ interface QuizApiService {
     suspend fun unFollow(
         @Path("id") userId: Int,
     ): Response<Unit>
+
+    @GET("study_sets/{id}/members")
+    suspend fun getStudySetMembers(@Path("id") setId: Int): Response<List<Member>>
+
+    @FormUrlEncoded
+    @POST("study_sets/{id}/invite")
+    suspend fun inviteToSet(
+        @Path("id") setId: Int,
+        @Field("user_id") userId: Int,
+        @Field("access_level") accessLevel: Int,
+    ): Response<Unit>
+
+    @DELETE("study_sets/{setId}/remove/{userId}")
+    suspend fun removeSetMember(
+        @Path("setId") setId: Int,
+        @Path("userId") userId: Int,
+    ): Response<Unit>
+
+    @DELETE("study_sets/{setId}/leave")
+    suspend fun leaveSetMember(
+        @Path("setId") setId: Int,
+    ): Response<Unit>
+
+    @GET("search_set_users")
+    suspend fun searchSetUsers(
+        @Query("study_set_id") setId: Int,
+        @Query("search") search: String
+    ): Response<List<MyProfile>>
 }

@@ -3,8 +3,8 @@ package com.example.quizapp.di
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
-import com.example.quizapp.data.session.SessionCache
-import com.example.quizapp.data.session.SessionCacheImpl
+import com.example.quizapp.data.local.SessionCache
+import com.example.quizapp.data.local.SessionCacheImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

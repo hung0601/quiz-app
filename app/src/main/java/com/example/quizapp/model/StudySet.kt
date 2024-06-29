@@ -17,7 +17,7 @@
 package com.example.quizapp.model
 
 
-import com.example.quizapp.constant.PUBLIC_ACCESS
+import com.example.quizapp.constants.PUBLIC_ACCESS
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

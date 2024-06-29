@@ -1,4 +1,4 @@
-package com.example.quizapp.constant
+package com.example.quizapp.constants
 
 enum class QuestionType(val value: String) {
     MultipleChoiceQuestion("App\\Models\\QuizQuestion"),

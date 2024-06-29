@@ -3,7 +3,7 @@ package com.example.quizapp.ui.screens.exam
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.quizapp.constant.QuestionType
+import com.example.quizapp.constants.QuestionType
 import com.example.quizapp.model.ExamResult
 import com.example.quizapp.model.MultipleChoiceQuestion
 import com.example.quizapp.model.Question

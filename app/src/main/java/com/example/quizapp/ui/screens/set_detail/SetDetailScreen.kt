@@ -8,12 +8,14 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -29,13 +31,16 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Reviews
 import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +60,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -65,6 +71,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.quizapp.R
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.network.response_model.ResponseHandlerState
 import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
@@ -74,6 +81,7 @@ import com.example.quizapp.ui.components.basic.tag.CustomTag
 import com.example.quizapp.ui.components.basic.textfield.CustomTextField
 import com.example.quizapp.ui.components.business.access_type.AccessType
 import com.example.quizapp.ui.components.business.exam.ExamListDialog
+import com.example.quizapp.ui.components.business.study_set.MemberListDialog
 import com.example.quizapp.ui.components.business.term.TermItem
 import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.hooks.ErrorScreen
@@ -112,8 +120,10 @@ fun DetailScreen(
     navController: NavController
 ) {
     var openAddTermDialog by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
     var openExamListDialog by remember { mutableStateOf(false) }
     var openVoteDialog by remember { mutableStateOf(false) }
+    var openMemberDialog by remember { mutableStateOf(false) }
     val voteResponse by setDetailModel.voteResponse.collectAsState()
     var isHideHeader by remember {
         mutableStateOf(false)
@@ -130,7 +140,14 @@ fun DetailScreen(
             }
         }
     }
-    Column(modifier = Modifier.padding(8.dp)) {
+    Column(modifier = Modifier) {
+        if (openMemberDialog) {
+            MemberListDialog(
+                onDismissRequest = { openMemberDialog = false },
+                studySetDetail = studySet,
+                navController = navController
+            )
+        }
         if (openAddTermDialog) {
             AddTermDialog(onDismissRequest = { openAddTermDialog = false },
                 studySet,
@@ -151,194 +168,214 @@ fun DetailScreen(
                 setDetailModel.sendVote(it)
             }, onCancel = { openVoteDialog = false })
         }
-        AnimatedVisibility(
-            visible = !isHideHeader,
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(8.dp)
         ) {
-            Column {
-                if (studySet.imageUrl != null) {
-                    AsyncImage(
-                        model = studySet.imageUrl,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .height(200.dp)
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp)),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = studySet.title, style = TextStyle(
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+
+            AnimatedVisibility(
+                visible = !isHideHeader,
+            ) {
+                Column {
+                    if (studySet.imageUrl != null) {
+                        AsyncImage(
+                            model = studySet.imageUrl,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .height(200.dp)
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp)),
+                            contentScale = ContentScale.Crop,
                         )
-                        Text(text = studySet.description)
                     }
-                    if (setDetailModel.currentUser != null && setDetailModel.currentUser.id == studySet.owner.id) {
-                        IconButton(onClick = { openAddTermDialog = true }) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = studySet.title, style = TextStyle(
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                            Text(text = studySet.description)
+                        }
+                        if (setDetailModel.currentUser != null && setDetailModel.currentUser.id == studySet.owner.id) {
+                            Box {
+                                IconButton(onClick = { expanded = true }) {
+                                    Icon(
+                                        Icons.Default.MoreVert,
+                                        contentDescription = "Localized description"
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Member list") },
+                                        onClick = { expanded = false; openMemberDialog = true },
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.Outlined.Person,
+                                                contentDescription = null
+                                            )
+                                        })
+                                }
+                            }
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        StarReview(
+                            star = studySet.votesAvgStar ?: 0F,
+                            size = 15,
+                            disable = true,
+                            isShowText = true
+                        )
+                        IconButton(
+                            onClick = { openVoteDialog = true },
+                            modifier = Modifier.height(24.dp)
+                        ) {
                             Icon(
-                                imageVector = Icons.Outlined.Add,
+                                imageVector = Icons.Outlined.Reviews,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.tertiary
                             )
                         }
                     }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    StarReview(
-                        star = studySet.votesAvgStar ?: 0F,
-                        size = 15,
-                        disable = true,
-                        isShowText = true
-                    )
-                    IconButton(
-                        onClick = { openVoteDialog = true },
-                        modifier = Modifier.height(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Reviews,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                }
-                FlowRow(
-                    modifier = Modifier.padding(top = 5.dp),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                ) {
-                    studySet.topics.map {
-                        CustomTag(text = it.name, modifier = Modifier.padding(bottom = 5.dp))
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(15.dp),
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    FlowRow(
+                        modifier = Modifier.padding(top = 5.dp),
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
                     ) {
-                        CircleAvatar(
-                            avatarImg = studySet.owner.imageUrl,
-                            name = studySet.owner.name,
-                            modifier = Modifier.size(20.dp, 20.dp)
+                        studySet.topics.map {
+                            CustomTag(text = it.name, modifier = Modifier.padding(bottom = 5.dp))
+                        }
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(15.dp),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        ) {
+                            CircleAvatar(
+                                avatarImg = studySet.owner.imageUrl,
+                                name = studySet.owner.name,
+                                modifier = Modifier.size(20.dp, 20.dp)
+                            )
+                            Text(
+                                text = studySet.owner.name,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                        AccessType(accessType = studySet.accessType)
+                    }
+                    Divider(
+                        modifier = Modifier.padding(
+                            top = 10.dp,
+                            start = 5.dp,
+                            end = 5.dp,
+                            bottom = 10.dp
                         )
-                        Text(
-                            text = studySet.owner.name,
-                            style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Terms", style = TextStyle(fontWeight = FontWeight.SemiBold))
+                    Text(text = studySet.terms.size.toString())
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Favorite", style = TextStyle(fontWeight = FontWeight.SemiBold))
+                    Text(text = "0")
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Mastered", style = TextStyle(fontWeight = FontWeight.SemiBold))
+                    Text(text = "0")
+                }
+                if (isHideHeader) {
+                    IconButton(
+                        onClick = { isHideHeader = false },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.KeyboardArrowRight,
+                            contentDescription = null
                         )
                     }
-                    AccessType(accessType = studySet.accessType)
+                } else {
+                    IconButton(
+                        onClick = { isHideHeader = true },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.KeyboardArrowDown,
+                            contentDescription = null
+                        )
+                    }
                 }
-                Divider(
-                    modifier = Modifier.padding(
-                        top = 10.dp,
-                        start = 5.dp,
-                        end = 5.dp,
-                        bottom = 10.dp
-                    )
+            }
+            Divider(
+                modifier = Modifier.padding(
+                    top = 10.dp,
+                    start = 5.dp,
+                    end = 5.dp,
+                    bottom = 10.dp
                 )
-            }
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Thuật ngữ", style = TextStyle(fontWeight = FontWeight.SemiBold))
-                Text(text = studySet.terms.size.toString())
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Yêu thích", style = TextStyle(fontWeight = FontWeight.SemiBold))
-                Text(text = "0")
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Đã học", style = TextStyle(fontWeight = FontWeight.SemiBold))
-                Text(text = "0")
-            }
-            if (isHideHeader) {
-                IconButton(
-                    onClick = { isHideHeader = false },
-                ) {
-                    Icon(imageVector = Icons.Outlined.KeyboardArrowRight, contentDescription = null)
-                }
-            } else {
-                IconButton(
-                    onClick = { isHideHeader = true },
-                ) {
-                    Icon(imageVector = Icons.Outlined.KeyboardArrowDown, contentDescription = null)
-                }
-            }
-        }
-        Divider(modifier = Modifier.padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 10.dp))
-        LazyColumn(
-            modifier = Modifier.weight(1F),
-            state = termListState
-        ) {
-            item {
-                Text(
-                    text = "Not studied",
-                    style = TextStyle(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
-                )
-            }
-            itemsIndexed(studySet.terms.filter { it.status == 0 }) { index, it ->
-                TermItem(term = it)
-                if (index != studySet.terms.filter { it.status == 0 }.lastIndex) {
-                    Divider(
+            )
+            LazyColumn(
+                modifier = Modifier.weight(1F),
+                state = termListState,
+            ) {
+                item {
+                    Text(
+                        text = "Not studied",
+                        style = TextStyle(fontWeight = FontWeight.SemiBold),
                         modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
-                        thickness = 1.dp,
-                        color = Color.Gray
                     )
                 }
-            }
-            item {
-                Text(
-                    text = "Still learning",
-                    style = TextStyle(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
-                )
-            }
-            itemsIndexed(studySet.terms.filter { it.status == 1 }) { index, it ->
-                TermItem(term = it)
-                if (index != studySet.terms.filter { it.status == 1 }.lastIndex) {
-                    Divider(
+                itemsIndexed(studySet.terms.filter { it.status == 0 }) { index, it ->
+                    TermItem(term = it)
+                }
+                item {
+                    Text(
+                        text = "Still learning",
+                        style = TextStyle(fontWeight = FontWeight.SemiBold),
                         modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
-                        thickness = 1.dp,
-                        color = Color.Gray
                     )
                 }
-            }
-            item {
-                Text(
-                    text = "Mastered", style = TextStyle(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
-                )
-            }
-            itemsIndexed(studySet.terms.filter { it.status == 2 }) { index, it ->
-                TermItem(term = it)
-                if (index != studySet.terms.filter { it.status == 2 }.lastIndex) {
-                    Divider(
-                        modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
-                        thickness = 1.dp,
-                        color = Color.Gray
+                itemsIndexed(studySet.terms.filter { it.status == 1 }) { index, it ->
+                    TermItem(term = it)
+                }
+                item {
+                    Text(
+                        text = "Mastered", style = TextStyle(fontWeight = FontWeight.SemiBold),
+                        modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
                     )
                 }
+                itemsIndexed(studySet.terms.filter { it.status == 2 }) { index, it ->
+                    TermItem(term = it)
+                }
             }
+
+            Divider(
+                modifier = Modifier.padding(bottom = 0.dp),
+                thickness = 1.dp,
+                color = Color.Gray
+            )
+
         }
 
-        Divider(modifier = Modifier.padding(bottom = 0.dp), thickness = 1.dp, color = Color.Gray)
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .height(50.dp)
                 .fillMaxWidth()
         ) {
             Row(
@@ -346,34 +383,47 @@ fun DetailScreen(
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(color = MaterialTheme.colorScheme.primary)
+                    .padding(top = 5.dp)
 
             ) {
-                Button(
-                    onClick = { onClickStudy() },
-                    enabled = studySet.terms.isNotEmpty()
-                ) {
-                    Text(text = "Flashcard")
-                }
-                Button(
-                    onClick = {
-                        navController.navigate(Screen.Exam.passId(studySet.id))
-                    },
-                    enabled = studySet.terms.size >= 5
-                ) {
-                    Text(text = "Learn")
-                }
-                Button(
-                    onClick = {
-                        openExamListDialog = true
-                    },
-                    enabled = studySet.terms.size >= 5
-                ) {
-                    Text(text = "Exam")
-                }
+                SetMenuItem(imageId = R.drawable.flash_card, label = "Flash card", onClick = {
+                    onClickStudy()
+                })
+                SetMenuItem(imageId = R.drawable.game_console, label = "Game", onClick = {
+                    navController.navigate(Screen.MatchGame.passId(studySet.id))
+                })
+                SetMenuItem(imageId = R.drawable.study, label = "Learn", onClick = {
+                    navController.navigate(Screen.Exam.passId(studySet.id))
+                })
+                SetMenuItem(imageId = R.drawable.exam, label = "Exam", onClick = {
+                    openExamListDialog = true
+                })
             }
         }
 
 
+    }
+}
+
+@Composable
+fun SetMenuItem(@DrawableRes imageId: Int, label: String, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable {
+            onClick()
+        }
+    ) {
+        Image(
+            painter = painterResource(id = imageId),
+            contentDescription = null,
+            modifier = Modifier.size(25.dp)
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
     }
 }
 

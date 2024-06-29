@@ -1,4 +1,4 @@
-package com.example.quizapp.util
+package com.example.quizapp.utils
 
 import com.example.quizapp.network.response_model.ApiResponse
 import com.example.quizapp.network.response_model.ResponseHandlerState

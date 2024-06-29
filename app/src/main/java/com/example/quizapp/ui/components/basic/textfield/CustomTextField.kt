@@ -22,6 +22,7 @@ fun CustomTextField(
     singleLine: Boolean = true,
     label: @Composable() (() -> Unit)? = null,
     placeholder: @Composable() (() -> Unit)? = null,
+    trailingIcon: @Composable() (() -> Unit)? = null,
     isError: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -39,7 +40,8 @@ fun CustomTextField(
         placeholder = placeholder,
         isError = isError,
         keyboardActions = keyboardActions,
-        keyboardOptions = keyboardOptions
+        keyboardOptions = keyboardOptions,
+        trailingIcon = trailingIcon
     )
 
 }

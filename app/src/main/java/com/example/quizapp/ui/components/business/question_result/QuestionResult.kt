@@ -21,7 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.quizapp.constant.QuestionType
+import com.example.quizapp.constants.QuestionType
 import com.example.quizapp.model.ExamResult
 import com.example.quizapp.model.MultipleChoiceQuestion
 import com.example.quizapp.model.TrueFalseQuestion

@@ -44,7 +44,7 @@ fun LibraryScreen(navController: NavController) {
     val studySetList by libraryViewModel.studySetList.collectAsState()
     val courseList by libraryViewModel.courseList.collectAsState()
     var tabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("Study sets", "Collections")
+    val tabs = listOf("Study sets", "Courses")
     Column(
         modifier = Modifier
             .fillMaxSize()

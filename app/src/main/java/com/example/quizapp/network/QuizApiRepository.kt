@@ -20,6 +20,7 @@ import com.example.quizapp.model.CourseDetail
 import com.example.quizapp.model.CourseInvite
 import com.example.quizapp.model.CreatorProfile
 import com.example.quizapp.model.ExamDetail
+import com.example.quizapp.model.Member
 import com.example.quizapp.model.MyProfile
 import com.example.quizapp.model.Search
 import com.example.quizapp.model.StudySet
@@ -87,6 +88,11 @@ interface QuizApiRepository {
     suspend fun submitExam(examId: Int, results: List<SubmitExamRequest>): ApiResponse<Unit>
     suspend fun followUser(userId: Int): ApiResponse<Unit>
     suspend fun unFollow(userId: Int): ApiResponse<Unit>
+    suspend fun getStudySetMembers(id: Int): ApiResponse<List<Member>>
+    suspend fun inviteToSet(setId: Int, userId: Int, accessLevel: Int): ApiResponse<Unit>
+    suspend fun removeSetMember(setId: Int, userId: Int): ApiResponse<Unit>
+    suspend fun leaveSetMember(setId: Int): ApiResponse<Unit>
+    suspend fun searchSetUsers(setId: Int, search: String): ApiResponse<List<MyProfile>>
 }
 
 /**
@@ -270,6 +276,36 @@ class NetworkQuizApiRepository(
     override suspend fun unFollow(userId: Int): ApiResponse<Unit> {
         return handleApi {
             quizApiService.unFollow(userId)
+        }
+    }
+
+    override suspend fun getStudySetMembers(id: Int): ApiResponse<List<Member>> {
+        return handleApi {
+            quizApiService.getStudySetMembers(id)
+        }
+    }
+
+    override suspend fun inviteToSet(setId: Int, userId: Int, accessLevel: Int): ApiResponse<Unit> {
+        return handleApi {
+            quizApiService.inviteToSet(setId, userId, accessLevel)
+        }
+    }
+
+    override suspend fun removeSetMember(setId: Int, userId: Int): ApiResponse<Unit> {
+        return handleApi {
+            quizApiService.removeSetMember(setId, userId)
+        }
+    }
+
+    override suspend fun leaveSetMember(setId: Int): ApiResponse<Unit> {
+        return handleApi {
+            quizApiService.leaveSetMember(setId)
+        }
+    }
+
+    override suspend fun searchSetUsers(setId: Int, search: String): ApiResponse<List<MyProfile>> {
+        return handleApi {
+            quizApiService.searchSetUsers(setId, search)
         }
     }
 }

@@ -45,8 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.quizapp.constant.COUNTDOWN_TIME
-import com.example.quizapp.constant.QuestionType
+import com.example.quizapp.constants.COUNTDOWN_TIME
+import com.example.quizapp.constants.QuestionType
 import com.example.quizapp.model.ExamResult
 import com.example.quizapp.model.MultipleChoiceQuestion
 import com.example.quizapp.model.Question
