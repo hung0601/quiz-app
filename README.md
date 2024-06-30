@@ -5,9 +5,9 @@ Hướng dẫn cài đặt:
  + cd vào thư mục mã nguồn
  + Chạy lệnh: composer install
  + Lần lượt chạy:
-   php artisan key:generate
-   php artisan migrate
-   php artisan db:seed
+   php artisan key:generate /
+   php artisan migrate /
+   php artisan db:seed /
 + Chạy:  php artisan serve
 
 - Đối với android app: mã nguồn được nén trong file quiz-app-android.zip
@@ -20,5 +20,5 @@ Hướng dẫn cài đặt:
   + Giải nén thư mục
   + cd vào thư mục chứa mã nguồn
   + Chạy lệnh:
-      npm i
-      npm run dev
+      npm i /
+      npm run dev /
