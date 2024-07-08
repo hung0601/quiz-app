@@ -3,6 +3,7 @@ package com.example.quizapp.ui.screens.course.detail
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -125,7 +126,11 @@ fun CourseDetail(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    modifier = Modifier.padding(top = 10.dp)
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .clickable {
+                            navController.navigate(Screen.Profile.passId(course.owner.id))
+                        }
                 ) {
                     CircleAvatar(
                         avatarImg = course.owner.imageUrl,

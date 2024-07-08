@@ -28,6 +28,7 @@ import com.example.quizapp.model.StudySet
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
 import com.example.quizapp.model.Token
+import com.example.quizapp.model.Topic
 import com.example.quizapp.network.request_model.StoreStudyRequest
 import com.example.quizapp.network.request_model.SubmitExamRequest
 import okhttp3.RequestBody
@@ -76,6 +77,9 @@ interface QuizApiService {
     @GET("followers")
     suspend fun getFollowers(@Query("user_id") userId: Int? = null): Response<List<CreatorProfile>>
 
+    @GET("followers/following")
+    suspend fun getFollowings(): Response<List<CreatorProfile>>
+
     @GET("courses")
     suspend fun getCourses(): Response<List<Course>>
 
@@ -102,8 +106,17 @@ interface QuizApiService {
     @POST("study_sets")
     suspend fun createSet(@Body body: RequestBody): Response<StudySet>
 
+    @POST("study_sets/{id}")
+    suspend fun updateSet(@Path("id") id: Int, @Body body: RequestBody): Response<StudySet>
+
     @POST("terms")
     suspend fun addTerm(@Body body: RequestBody): Response<Term>
+
+    @POST("terms/{id}")
+    suspend fun updateTerm(@Path("id") id: Int, @Body body: RequestBody): Response<Term>
+
+    @DELETE("terms/{id}")
+    suspend fun deleteTerm(@Path("id") id: Int): Response<Unit>
 
     @FormUrlEncoded
     @POST("courses/add_study_set")
@@ -199,4 +212,9 @@ interface QuizApiService {
         @Query("study_set_id") setId: Int,
         @Query("search") search: String
     ): Response<List<MyProfile>>
+
+    @GET("topic")
+    suspend fun getTopics(
+        @Query("search") search: String
+    ): Response<List<Topic>>
 }

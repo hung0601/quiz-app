@@ -27,14 +27,16 @@ import com.example.quizapp.model.StudySet
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
 import com.example.quizapp.model.Token
+import com.example.quizapp.model.Topic
 import com.example.quizapp.network.request_model.LoginRequest
 import com.example.quizapp.network.request_model.StoreStudyRequest
+import com.example.quizapp.network.request_model.StoreStudySetRequest
+import com.example.quizapp.network.request_model.StoreTermRequest
 import com.example.quizapp.network.request_model.SubmitExamRequest
 import com.example.quizapp.network.response_model.ApiResponse
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import java.io.File
 
 
 /**
@@ -50,6 +52,7 @@ interface QuizApiRepository {
     suspend fun getSetsByUser(userId: Int): ApiResponse<List<StudySet>>
     suspend fun getCoursesByUser(userId: Int): ApiResponse<List<Course>>
     suspend fun getFollowers(userId: Int? = null): ApiResponse<List<CreatorProfile>>
+    suspend fun getFollowings(): ApiResponse<List<CreatorProfile>>
     suspend fun getCourses(): ApiResponse<List<Course>>
     suspend fun getStudySets(): ApiResponse<List<StudySet>>
     suspend fun getCreatedSets(): ApiResponse<List<StudySet>>
@@ -60,18 +63,15 @@ interface QuizApiRepository {
     suspend fun addStudySets(courseId: Int, studySetIds: List<Int>): ApiResponse<Unit>
     suspend fun acceptInvite(courseId: Int, isAccept: Boolean): ApiResponse<Boolean>
     suspend fun getInvites(): ApiResponse<List<CourseInvite>>
-    suspend fun createSet(
-        image: File,
-        title: String,
-        description: String,
-        courseId: Int?
-    ): ApiResponse<StudySet>
+    suspend fun createSet(request: StoreStudySetRequest): ApiResponse<StudySet>
+    suspend fun updateSet(id: Int, request: StoreStudySetRequest): ApiResponse<StudySet>
 
-    suspend fun addTerm(
-        image: File,
-        term: String,
-        definition: String,
-        studySetId: Int
+    suspend fun addTerm(formData: StoreTermRequest): ApiResponse<Term>
+    suspend fun deleteTerm(id: Int): ApiResponse<Unit>
+    suspend fun updateTerm(
+        id: Int,
+        formData: StoreTermRequest,
+        isDeleteImage: Boolean
     ): ApiResponse<Term>
 
     suspend fun inviteMember(
@@ -93,6 +93,7 @@ interface QuizApiRepository {
     suspend fun removeSetMember(setId: Int, userId: Int): ApiResponse<Unit>
     suspend fun leaveSetMember(setId: Int): ApiResponse<Unit>
     suspend fun searchSetUsers(setId: Int, search: String): ApiResponse<List<MyProfile>>
+    suspend fun getTopics(search: String): ApiResponse<List<Topic>>
 }
 
 /**
@@ -123,6 +124,10 @@ class NetworkQuizApiRepository(
 
     override suspend fun getFollowers(userId: Int?): ApiResponse<List<CreatorProfile>> {
         return handleApi { quizApiService.getFollowers(userId) }
+    }
+
+    override suspend fun getFollowings(): ApiResponse<List<CreatorProfile>> {
+        return handleApi { quizApiService.getFollowings() }
     }
 
     override suspend fun getProfile(userId: Int): ApiResponse<CreatorProfile> {
@@ -171,47 +176,116 @@ class NetworkQuizApiRepository(
     }
 
     override suspend fun createSet(
-        image: File,
-        title: String,
-        description: String,
-        courseId: Int?
+        request: StoreStudySetRequest
     ): ApiResponse<StudySet> {
         return handleApi {
             val builder: MultipartBody.Builder = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("title", title)
-                .addFormDataPart("description", description)
-                .addFormDataPart(
+                .addFormDataPart("title", request.title)
+                .addFormDataPart("description", request.description)
+                .addFormDataPart("term_lang", request.termLang)
+                .addFormDataPart("def_lang", request.defLang)
+                .addFormDataPart("access_type", request.accessType.toString())
+
+
+            if (request.image != null) {
+                builder.addFormDataPart(
                     "image",
-                    image.name,
-                    image.asRequestBody("image/*".toMediaTypeOrNull())
+                    request.image!!.name,
+                    request.image!!.asRequestBody("image/*".toMediaTypeOrNull())
                 )
-            if (courseId != null) builder.addFormDataPart("course_id", courseId.toString())
+            }
+            if (request.courseId != null) builder.addFormDataPart(
+                "course_id",
+                request.courseId.toString()
+            )
+
+            request.topicIds.forEach {
+                builder.addFormDataPart("topic_ids[]", it.toString())
+            }
             val requestBody = builder.build()
             quizApiService.createSet(requestBody)
         }
     }
 
-    override suspend fun addTerm(
-        image: File,
-        term: String,
-        definition: String,
-        studySetId: Int
+    override suspend fun updateSet(
+        id: Int,
+        request: StoreStudySetRequest
+    ): ApiResponse<StudySet> {
+        return handleApi {
+            val builder: MultipartBody.Builder = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("title", request.title)
+                .addFormDataPart("description", request.description)
+                .addFormDataPart("term_lang", request.termLang)
+                .addFormDataPart("def_lang", request.defLang)
+                .addFormDataPart("access_type", request.accessType.toString())
+                .addFormDataPart("_method", "put")
+
+
+            if (request.image != null) {
+                builder.addFormDataPart(
+                    "image",
+                    request.image!!.name,
+                    request.image!!.asRequestBody("image/*".toMediaTypeOrNull())
+                )
+            }
+
+            request.topicIds.forEach {
+                builder.addFormDataPart("topic_ids[]", it.toString())
+            }
+            val requestBody = builder.build()
+            quizApiService.updateSet(id, requestBody)
+        }
+    }
+
+    override suspend fun addTerm(formData: StoreTermRequest): ApiResponse<Term> {
+        return handleApi {
+            val builder: MultipartBody.Builder = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("term", formData.term)
+                .addFormDataPart("definition", formData.definition)
+                .addFormDataPart("study_set_id", formData.studySetId.toString())
+            if (formData.image != null) {
+                builder.addFormDataPart(
+                    "image",
+                    formData.image.name,
+                    formData.image.asRequestBody("image/*".toMediaTypeOrNull())
+                )
+            }
+            val requestBody = builder.build()
+            quizApiService.addTerm(requestBody)
+        }
+    }
+
+    override suspend fun deleteTerm(id: Int): ApiResponse<Unit> {
+        return handleApi {
+            quizApiService.deleteTerm(id)
+        }
+    }
+
+    override suspend fun updateTerm(
+        id: Int,
+        formData: StoreTermRequest,
+        isDeleteImage: Boolean
     ): ApiResponse<Term> {
         return handleApi {
             val builder: MultipartBody.Builder = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("term", term)
-                .addFormDataPart("definition", definition)
-                .addFormDataPart("study_set_id", studySetId.toString())
-                .addFormDataPart(
+                .addFormDataPart("term", formData.term)
+                .addFormDataPart("definition", formData.definition)
+                .addFormDataPart("_method", "PUT")
+            if (formData.image != null) {
+                builder.addFormDataPart(
                     "image",
-                    image.name,
-                    image.asRequestBody("image/*".toMediaTypeOrNull())
-
+                    formData.image.name,
+                    formData.image.asRequestBody("image/*".toMediaTypeOrNull())
                 )
+            } else if (isDeleteImage) {
+                builder.addFormDataPart("image", "")
+            }
             val requestBody = builder.build()
-            quizApiService.addTerm(requestBody)
+            quizApiService.updateTerm(id, requestBody)
         }
     }
 
@@ -306,6 +380,12 @@ class NetworkQuizApiRepository(
     override suspend fun searchSetUsers(setId: Int, search: String): ApiResponse<List<MyProfile>> {
         return handleApi {
             quizApiService.searchSetUsers(setId, search)
+        }
+    }
+
+    override suspend fun getTopics(search: String): ApiResponse<List<Topic>> {
+        return handleApi {
+            quizApiService.getTopics(search)
         }
     }
 }

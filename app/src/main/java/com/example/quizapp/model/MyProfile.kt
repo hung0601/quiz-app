@@ -14,6 +14,10 @@ data class MyProfile(
     val coursesCount: Int? = 0,
     @SerialName(value = "study_sets_count")
     val studySetsCount: Int? = 0,
+    @SerialName(value = "followers_count")
+    val followersCount: Int? = 0,
+    @SerialName(value = "followings_count")
+    val followingsCount: Int? = 0,
     @SerialName(value = "created_at")
     val createdAt: String?,
     @SerialName(value = "updated_at")

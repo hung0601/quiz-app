@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quizapp.model.Term
 import com.example.quizapp.network.QuizApiRepository
-import com.example.quizapp.network.response_model.ApiResponse
+import com.example.quizapp.network.request_model.StoreTermRequest
 import com.example.quizapp.network.response_model.ResponseHandlerState
+import com.example.quizapp.utils.handleResponseState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,20 +36,9 @@ class AddTermViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             _addTermResponse.value = ResponseHandlerState.Loading
-            val response = quizApiRepository.addTerm(image, term, definition, studySetId)
-            _addTermResponse.value = when (response) {
-                is ApiResponse.Success -> {
-                    ResponseHandlerState.Success(response.data)
-                }
-
-                is ApiResponse.Error -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-
-                is ApiResponse.Exception -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-            }
+            val response =
+                quizApiRepository.addTerm(StoreTermRequest(image, term, definition, studySetId))
+            _addTermResponse.value = handleResponseState(response)
         }
     }
 }

@@ -10,8 +10,6 @@ import javax.inject.Inject
 class UserViewModel @Inject constructor(
     private val sessionCache: SessionCache,
 ) : ViewModel() {
-
-
     val session get() = sessionCache.getActiveSession()
 
 

@@ -1,6 +1,9 @@
 package com.example.quizapp.ui.screens
 
-import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
@@ -13,7 +16,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -38,7 +45,7 @@ sealed class BottomBarScreen(
     )
 
     object Library : BottomBarScreen(
-        route = "library",
+        route = Screen.Library.route,
         title = "Library",
         icon = Icons.Default.LibraryAdd
     )
@@ -68,30 +75,42 @@ fun BottomBar(navController: NavHostController) {
         BottomNavigation(
             backgroundColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
         ) {
             screens.forEach { screen ->
+                val isSelected =
+                    currentDestination?.hierarchy?.any { it.route == screen.route } == true
                 BottomNavigationItem(
                     icon = {
                         Icon(
                             screen.icon,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
                         )
                     },
                     label = {
                         Text(
                             text = screen.title,
-                            color = MaterialTheme.colorScheme.onPrimary
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
                         )
                     },
                     selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                     onClick = {
-                        Log.d("selected", screen.route)
                         navController.navigate(screen.route) {
                             popUpTo(navController.graph.findStartDestination().id)
                             launchSingleTop = true
                         }
-                    }
+                    },
+                    modifier = if (isSelected) Modifier
+                        .background(
+                            color = Color.White,
+                            shape = CircleShape
+                        )
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.primary,
+                            CircleShape
+                        ) else Modifier,
                 )
             }
         }

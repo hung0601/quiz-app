@@ -29,5 +29,4 @@ data class StudySetDetail(
     val createdAt: String?,
     @SerialName(value = "updated_at")
     val updatedAt: String?
-
 )

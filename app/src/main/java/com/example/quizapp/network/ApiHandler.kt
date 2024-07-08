@@ -14,7 +14,7 @@ private val moshi = Moshi.Builder()
 private val adapter = moshi.adapter(ErrorResponse::class.java)
 
 interface ApiHandler {
-    suspend fun <T : Any> handleApi(
+    suspend fun <T> handleApi(
         execute: suspend () -> Response<T>
     ): ApiResponse<T> {
         return try {

@@ -12,6 +12,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,8 +32,8 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,24 +48,33 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.model.Term
+import com.example.quizapp.ui.components.basic.button.CustomButton
 import com.example.quizapp.ui.theme.md_theme_error
 import com.example.quizapp.ui.theme.md_theme_success
+import kotlin.math.abs
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun FlashCardScreen(studySet: StudySetDetail) {
-    val flashCardModel = hiltViewModel<FlashCardModel>()
+fun FlashCardScreen(studySet: StudySetDetail, navController: NavController) {
+    val flashCardModel =
+        hiltViewModel<FlashCardModel, FlashCardModel.FlashCardModelFactory> { factory ->
+            factory.create(studySet)
+        }
     val uiState by flashCardModel.uiState.collectAsState()
     val color1 = Color(0xfff6f7fb)
     Row(
@@ -72,79 +82,107 @@ fun FlashCardScreen(studySet: StudySetDetail) {
             .background(color = color1, shape = RectangleShape)
             .fillMaxSize()
     ) {
-        Column(
-            modifier = Modifier
-                .padding(5.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = (uiState.currentTerm + 1).toString() + "/" + studySet.terms.size.toString(),
-                style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
-            )
-            AnimatedContent(
-                targetState = uiState.currentTerm,
-                transitionSpec = {
-                    if (targetState > initialState) {
-                        slideInHorizontally { width -> width } + fadeIn() with
-                                slideOutHorizontally { width -> -width }
-                    } else {
-                        slideInHorizontally { width -> -width } + fadeIn() with
-                                slideOutHorizontally { width -> width }
-                    }.using(
-                        SizeTransform(clip = false)
+        if (uiState.step == 0) {
+            Column(
+                modifier = Modifier
+                    .padding(5.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = (flashCardModel.findCurrentIndex(uiState.currentTerm) + 1).toString() + "/" + uiState.terms.size,
+                    style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
+                )
+                AnimatedContent(
+                    targetState = uiState.currentTerm,
+                    transitionSpec = {
+                        if (flashCardModel.findIndex(targetState) > flashCardModel.findIndex(
+                                initialState
+                            )
+                        ) {
+                            slideInHorizontally { width -> width } + fadeIn() with
+                                    slideOutHorizontally { width -> -width }
+                        } else {
+                            slideInHorizontally { width -> -width } + fadeIn() with
+                                    slideOutHorizontally { width -> width }
+                        }.using(
+                            SizeTransform(clip = false)
+                        )
+                    }, label = "",
+                    modifier = Modifier
+                        .weight(1F)
+                        .padding(10.dp)
+                ) {
+                    FlipCard(term = it,
+                        lang = studySet.termLang,
+                        flashCardModel = flashCardModel,
+                        uiState = uiState,
+                        onCardClick = {})
+                }
+
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+
+                    Icon(
+                        Icons.Outlined.Close,
+                        contentDescription = "Back button",
+                        tint = md_theme_error,
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clickable {
+                                flashCardModel.next()
+                            }
                     )
-                }, label = "",
-                modifier = Modifier
-                    .weight(1F)
-                    .padding(10.dp)
-            ) {
-                it
-                FlipCard(term = studySet.terms[it],
-                    lang = studySet.termLang,
-                    flashCardModel = flashCardModel,
-                    uiState = uiState,
-                    onCardClick = {})
+                    Icon(
+                        Icons.Outlined.Check,
+                        contentDescription = "Next button",
+                        tint = md_theme_success,
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clickable {
+                                flashCardModel.remove()
+                            }
+                    )
+                }
             }
+        } else {
+            FlashCardEndScreen(navController = navController, flashCardModel = flashCardModel)
+        }
+    }
+}
 
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-
-                Icon(
-                    Icons.Outlined.Close,
-                    contentDescription = "Back button",
-                    tint = md_theme_error,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clickable {
-                            flashCardModel.setCurrentTerm(
-                                getPrevTerm(
-                                    studySet.terms,
-                                    uiState.currentTerm
-                                )
-                            )
-                        }
-                )
-                Icon(
-                    Icons.Outlined.Check,
-                    contentDescription = "Next button",
-                    tint = md_theme_success,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clickable {
-                            flashCardModel.setCurrentTerm(
-                                getNextTerm(
-                                    studySet.terms,
-                                    uiState.currentTerm
-                                )
-                            )
-                        }
-                )
+@Composable
+fun FlashCardEndScreen(
+    navController: NavController,
+    flashCardModel: FlashCardModel,
+) {
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "You have gone through all the flashcards, do you want to start again?",
+            style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            CustomButton(onClick = {
+                navController.navigateUp()
+            }) {
+                Text(text = "Exit")
+            }
+            CustomButton(onClick = {
+                flashCardModel.reset()
+            }) {
+                Text(text = "OK")
             }
         }
     }
@@ -181,8 +219,9 @@ fun FlipCard(
         animationSpec = tween(500), label = ""
     )
 
-    val context = LocalContext.current
-
+    var offsetX by remember { mutableStateOf(0f) }
+    var componentWidth by remember { mutableStateOf(0.dp) }
+    val localDensity = LocalDensity.current
     ElevatedCard(
         colors = CardDefaults.cardColors(
             containerColor = Color(0xffffffff),
@@ -202,6 +241,33 @@ fun FlipCard(
             .graphicsLayer {
                 rotationY = rotation
                 cameraDistance = 8 * density
+            }
+            .onGloballyPositioned {
+                componentWidth = with(localDensity) {
+                    it.size.width.toDp()
+                }
+            }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        val (x, y) = dragAmount
+                        offsetX += dragAmount.x
+
+                    },
+                    onDragEnd = {
+                        when {
+                            (offsetX < 0F && abs(offsetX) > componentWidth.toPx() / 4) -> {
+                                flashCardModel.next()
+                            }
+
+                            (offsetX > 0 && abs(offsetX) > componentWidth.toPx() / 4) -> {
+                                flashCardModel.prev()
+                            }
+                        }
+                        offsetX = 0F
+                    }
+                )
             }
 
     )
@@ -301,14 +367,3 @@ fun FlipCard(
     }
 
 }
-
-fun getNextTerm(terms: List<Term>, currentIndex: Int): Int {
-    return if (currentIndex + 1 < terms.size) currentIndex + 1
-    else 0
-}
-
-fun getPrevTerm(terms: List<Term>, currentIndex: Int): Int {
-    return if (currentIndex - 1 >= 0) currentIndex - 1
-    else terms.size - 1
-}
-

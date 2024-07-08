@@ -1,12 +1,13 @@
 package com.example.quizapp.ui.screens.library
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quizapp.model.Course
 import com.example.quizapp.model.StudySet
 import com.example.quizapp.network.QuizApiRepository
-import com.example.quizapp.network.response_model.ApiResponse
 import com.example.quizapp.network.response_model.ResponseHandlerState
+import com.example.quizapp.utils.handleResponseState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     private val quizApiRepository: QuizApiRepository,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val _studySetList =
         MutableStateFlow<ResponseHandlerState<List<StudySet>>>(ResponseHandlerState.Loading)
@@ -25,6 +27,8 @@ class LibraryViewModel @Inject constructor(
     private val _courseList =
         MutableStateFlow<ResponseHandlerState<List<Course>>>(ResponseHandlerState.Loading)
     val courseList: StateFlow<ResponseHandlerState<List<Course>>> = _courseList.asStateFlow()
+
+    val tabId: Int = checkNotNull(savedStateHandle.get<Int>("tabId"))
 
     init {
         getCourseList()
@@ -35,19 +39,7 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             _studySetList.value = ResponseHandlerState.Loading
             val response = quizApiRepository.getStudySets()
-            _studySetList.value = when (response) {
-                is ApiResponse.Success -> {
-                    ResponseHandlerState.Success(response.data)
-                }
-
-                is ApiResponse.Error -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-
-                is ApiResponse.Exception -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-            }
+            _studySetList.value = handleResponseState(response)
         }
     }
 
@@ -55,19 +47,7 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             _courseList.value = ResponseHandlerState.Loading
             val response = quizApiRepository.getCourses()
-            _courseList.value = when (response) {
-                is ApiResponse.Success -> {
-                    ResponseHandlerState.Success(response.data)
-                }
-
-                is ApiResponse.Error -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-
-                is ApiResponse.Exception -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-            }
+            _courseList.value = handleResponseState(response)
         }
     }
 }

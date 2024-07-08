@@ -22,11 +22,15 @@ sealed class Screen(
     )
 
     object Library : Screen(
-        route = "library",
+        route = "library?tabId={tabId}",
         title = "Library",
         isShowTopBar = false,
         canNavigateBack = false
-    )
+    ) {
+        fun passTabId(id: Int = 0): String {
+            return "library?tabId=$id"
+        }
+    }
 
     object StudySet :
         Screen(route = "study_set/{id}", title = "Study Set Detail", isShowBottomBar = false) {
@@ -37,8 +41,37 @@ sealed class Screen(
         }
     }
 
+    object EditStudySet :
+        Screen(
+            route = "edit_study_set/{id}",
+            title = "Edit Study Set",
+            isShowBottomBar = false,
+            isShowTopBar = true,
+            navigateIconType = 2
+        ) {
+        fun passId(
+            id: Int
+        ): String {
+            return "edit_study_set/$id"
+        }
+    }
+
+    object TermManagement :
+        Screen(
+            route = "term_management/{id}",
+            title = "Edit Terms",
+            isShowBottomBar = false,
+            isShowTopBar = false
+        ) {
+        fun passId(
+            id: Int
+        ): String {
+            return "term_management/$id"
+        }
+    }
+
     object Course :
-        Screen(route = "course/{id}", title = "Collection Detail", isShowBottomBar = false) {
+        Screen(route = "course/{id}", title = "Course Detail", isShowBottomBar = false) {
         fun passId(
             id: Int
         ): String {
@@ -136,7 +169,7 @@ sealed class Screen(
 
     object CreateCourse : Screen(
         route = "create_course",
-        title = "Create collection",
+        title = "Create course",
         isShowBottomBar = false,
         isShowTopBar = true,
         navigateIconType = 2
@@ -171,6 +204,8 @@ sealed class Screen(
             Profile,
             CreateCourse,
             CreateStudySet,
+            EditStudySet,
+            TermManagement,
             Notification,
             Search
         )

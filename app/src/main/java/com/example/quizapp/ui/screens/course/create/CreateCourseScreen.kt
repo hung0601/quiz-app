@@ -39,7 +39,7 @@ fun CreateCourseScreen(navController: NavController) {
     LaunchedEffect(key1 = courseResponse is ResponseHandlerState.Success) {
         scope.launch {
             if (courseResponse is ResponseHandlerState.Success) {
-                Toast.makeText(context, "Create collection successfully", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Create course successfully", Toast.LENGTH_LONG).show()
                 navController.popBackStack()
                 navController.navigate(Screen.Course.passId((courseResponse as ResponseHandlerState.Success<Course>).data.id))
             }

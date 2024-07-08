@@ -43,7 +43,7 @@ fun LibraryScreen(navController: NavController) {
     val libraryViewModel = hiltViewModel<LibraryViewModel>()
     val studySetList by libraryViewModel.studySetList.collectAsState()
     val courseList by libraryViewModel.courseList.collectAsState()
-    var tabIndex by remember { mutableStateOf(0) }
+    var tabIndex by remember { mutableStateOf(libraryViewModel.tabId) }
     val tabs = listOf("Study sets", "Courses")
     Column(
         modifier = Modifier

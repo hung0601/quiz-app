@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 @HiltViewModel(assistedFactory = MatchGameModel.MatchGameModelFactory::class)
 class MatchGameModel @AssistedInject constructor(
@@ -23,6 +24,13 @@ class MatchGameModel @AssistedInject constructor(
     }
 
     init {
+        createGameData()
+    }
+
+    fun reset() {
+        _uiState.update {
+            GameUiState()
+        }
         createGameData()
     }
 
@@ -47,6 +55,11 @@ class MatchGameModel @AssistedInject constructor(
                     result
                 }
             )
+            if (_uiState.value.cards.filter { !it.isMatched }.isEmpty()) {
+                _uiState.update {
+                    it.copy(step = 2)
+                }
+            }
         } else if (selected.isNotEmpty() && selected[0].term != card.term) {
             _uiState.value = _uiState.value.copy(
                 cards = _uiState.value.cards.map {

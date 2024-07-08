@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.screens.set_detail.create
+package com.example.quizapp.ui.screens.set_detail.edit
 
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
@@ -46,9 +46,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.quizapp.constants.PUBLIC_ACCESS
+import coil.compose.AsyncImage
 import com.example.quizapp.constants.accessTypeOptions
 import com.example.quizapp.model.StudySet
+import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.network.request_model.StoreStudySetRequest
 import com.example.quizapp.network.response_model.ResponseHandlerState
 import com.example.quizapp.ui.components.basic.select.SelectTextField
@@ -60,27 +61,32 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
-fun CreateSetScreen(navController: NavController) {
-    val createSetViewModel = hiltViewModel<CreateSetViewModel>()
-    val setResponse by createSetViewModel.setResponse.collectAsState()
-    val title = remember { mutableStateOf("") }
-    val description = remember { mutableStateOf("") }
-    val termLang = remember { mutableStateOf("") }
-    val defLang = remember { mutableStateOf("") }
-    val accessType = remember { mutableIntStateOf(PUBLIC_ACCESS) }
+fun EditSetScreen(
+    navController: NavController,
+    studySetDetail: StudySetDetail
+) {
+    val updateSetViewModel = hiltViewModel<EditSetViewModel>()
+    val setResponse by updateSetViewModel.setResponse.collectAsState()
+    val title = remember { mutableStateOf(studySetDetail.title) }
+    val description = remember { mutableStateOf(studySetDetail.description) }
+    val termLang = remember { mutableStateOf(studySetDetail.termLang) }
+    val defLang = remember { mutableStateOf(studySetDetail.defLang) }
+    val accessType = remember { mutableIntStateOf(studySetDetail.accessType) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
-    val topics by createSetViewModel.topics.collectAsState()
+    val topics by updateSetViewModel.topics.collectAsState()
 
     val context = LocalContext.current
     val bitmap = remember { mutableStateOf<Bitmap?>(null) }
 
     val scope = rememberCoroutineScope()
 
+
     LaunchedEffect(key1 = setResponse is ResponseHandlerState.Success) {
         scope.launch {
             if (setResponse is ResponseHandlerState.Success) {
-                Toast.makeText(context, "Create set successfully", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Update set successfully", Toast.LENGTH_LONG).show()
+                navController.popBackStack()
                 navController.popBackStack()
                 navController.navigate(Screen.StudySet.passId((setResponse as ResponseHandlerState.Success<StudySet>).data.id))
             }
@@ -95,7 +101,7 @@ fun CreateSetScreen(navController: NavController) {
                     (setResponse as ResponseHandlerState.Error).errorMsg,
                     Toast.LENGTH_LONG
                 ).show()
-                createSetViewModel.resetState()
+                updateSetViewModel.resetState()
             }
         }
     }
@@ -104,7 +110,6 @@ fun CreateSetScreen(navController: NavController) {
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
             imageUri = uri
         }
-
     val imageModifier = Modifier
         .fillMaxWidth()
         .height(200.dp)
@@ -145,6 +150,13 @@ fun CreateSetScreen(navController: NavController) {
                     )
                 }
             }
+        } else if (studySetDetail.imageUrl != null) {
+            AsyncImage(
+                model = studySetDetail.imageUrl,
+                contentDescription = null,
+                modifier = imageModifier,
+                contentScale = ContentScale.Crop,
+            )
         } else {
             Column(
                 modifier = imageModifier,
@@ -203,10 +215,10 @@ fun CreateSetScreen(navController: NavController) {
         TopicSelector(
             topics = topics,
             onSelect = {
-                createSetViewModel.addTopic(it)
+                updateSetViewModel.addTopic(it)
             },
             onRemove = {
-                createSetViewModel.removeTopic(it)
+                updateSetViewModel.removeTopic(it)
             },
             modifier = Modifier.fillMaxWidth()
         )
@@ -223,7 +235,7 @@ fun CreateSetScreen(navController: NavController) {
                         inputStream!!.copyTo(it)
                     }
                 }
-                createSetViewModel.createSet(
+                updateSetViewModel.updateSet(
                     StoreStudySetRequest(
                         image = file,
                         title = title.value,
@@ -237,7 +249,7 @@ fun CreateSetScreen(navController: NavController) {
             },
             enabled = title.value.isNotEmpty() && description.value.isNotEmpty() || setResponse is ResponseHandlerState.Loading
         ) {
-            Text(text = "Create")
+            Text(text = "Update")
         }
     }
 }

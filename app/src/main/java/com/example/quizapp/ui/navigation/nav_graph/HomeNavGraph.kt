@@ -31,6 +31,8 @@ import com.example.quizapp.ui.screens.set_detail.SetDetailModel
 import com.example.quizapp.ui.screens.set_detail.SetDetailScreen
 import com.example.quizapp.ui.screens.set_detail.StudySetUiState
 import com.example.quizapp.ui.screens.set_detail.create.CreateSetScreen
+import com.example.quizapp.ui.screens.set_detail.edit.EditSetScreen
+import com.example.quizapp.ui.screens.set_detail.term.TermManagementScreen
 
 fun NavGraphBuilder.homeNavGraph(
     navController: NavHostController
@@ -68,10 +70,17 @@ fun NavGraphBuilder.homeNavGraph(
         }
 
         composable(
-            route = Screen.Library.route
+            route = Screen.Library.route,
+            arguments = listOf(
+                navArgument("tabId") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+            )
         ) {
             LibraryScreen(navController = navController)
         }
+
         //Study set detail
         composable(
             route = Screen.StudySet.route,
@@ -89,6 +98,51 @@ fun NavGraphBuilder.homeNavGraph(
                 navController = navController
             )
         }
+
+        //Edit study set detail
+        composable(
+            route = Screen.EditStudySet.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            val viewModel = it.sharedViewModel<SetDetailModel>(navController)
+            val studySetUiState: StudySetUiState = viewModel.uiState
+            when (studySetUiState) {
+                is StudySetUiState.Success ->
+                    EditSetScreen(
+                        navController = navController,
+                        studySetDetail = studySetUiState.studySet
+                    )
+
+                else -> Text(text = "error")
+            }
+        }
+
+        //Term management screen
+        composable(
+            route = Screen.TermManagement.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            val viewModel = it.sharedViewModel<SetDetailModel>(navController)
+            val studySetUiState: StudySetUiState = viewModel.uiState
+            when (studySetUiState) {
+                is StudySetUiState.Success ->
+                    TermManagementScreen(
+                        navController = navController,
+                        studySetDetail = studySetUiState.studySet
+                    )
+
+                else -> Text(text = "error")
+            }
+        }
+
         //Course detail
         composable(
             route = Screen.Course.route,
@@ -114,7 +168,11 @@ fun NavGraphBuilder.homeNavGraph(
             val viewModel = it.sharedViewModel<SetDetailModel>(navController)
             val studySetUiState: StudySetUiState = viewModel.uiState
             when (studySetUiState) {
-                is StudySetUiState.Success -> FlashCardScreen(studySet = studySetUiState.studySet)
+                is StudySetUiState.Success -> FlashCardScreen(
+                    studySet = studySetUiState.studySet,
+                    navController = navController
+                )
+
                 else -> Text(text = "error")
             }
         }

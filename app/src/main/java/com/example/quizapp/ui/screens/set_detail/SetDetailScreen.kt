@@ -1,18 +1,9 @@
 package com.example.quizapp.ui.screens.set_detail
 
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
-import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,8 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,12 +21,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Reviews
-import androidx.compose.material.icons.outlined.Upload
-import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -57,28 +46,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.quizapp.R
+import com.example.quizapp.constants.EDIT_ACCESS_LEVEL
+import com.example.quizapp.constants.NONE_ACCESS_LEVEL
+import com.example.quizapp.constants.OWNER_ACCESS_LEVEL
+import com.example.quizapp.constants.PUBLIC_ACCESS
 import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.network.response_model.ResponseHandlerState
 import com.example.quizapp.ui.components.basic.avatar.CircleAvatar
 import com.example.quizapp.ui.components.basic.dialog.VoteDialog
 import com.example.quizapp.ui.components.basic.star_review.StarReview
 import com.example.quizapp.ui.components.basic.tag.CustomTag
-import com.example.quizapp.ui.components.basic.textfield.CustomTextField
 import com.example.quizapp.ui.components.business.access_type.AccessType
 import com.example.quizapp.ui.components.business.exam.ExamListDialog
 import com.example.quizapp.ui.components.business.study_set.MemberListDialog
@@ -87,7 +74,6 @@ import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen
 import kotlinx.coroutines.launch
-import java.io.File
 
 @Composable
 fun SetDetailScreen(
@@ -119,7 +105,6 @@ fun DetailScreen(
     setDetailModel: SetDetailModel,
     navController: NavController
 ) {
-    var openAddTermDialog by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     var openExamListDialog by remember { mutableStateOf(false) }
     var openVoteDialog by remember { mutableStateOf(false) }
@@ -147,11 +132,6 @@ fun DetailScreen(
                 studySetDetail = studySet,
                 navController = navController
             )
-        }
-        if (openAddTermDialog) {
-            AddTermDialog(onDismissRequest = { openAddTermDialog = false },
-                studySet,
-                onAddedTerm = { setDetailModel.getStudySet() })
         }
         if (openExamListDialog) {
             ExamListDialog(
@@ -199,7 +179,7 @@ fun DetailScreen(
                             )
                             Text(text = studySet.description)
                         }
-                        if (setDetailModel.currentUser != null && setDetailModel.currentUser.id == studySet.owner.id) {
+                        if (isEditPermission(studySet.permission)) {
                             Box {
                                 IconButton(onClick = { expanded = true }) {
                                     Icon(
@@ -218,6 +198,36 @@ fun DetailScreen(
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Outlined.Person,
+                                                contentDescription = null
+                                            )
+                                        })
+                                    DropdownMenuItem(
+                                        text = { Text("Edit set") },
+                                        onClick = {
+                                            navController.navigate(
+                                                Screen.EditStudySet.passId(
+                                                    studySet.id
+                                                )
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.Outlined.Edit,
+                                                contentDescription = null
+                                            )
+                                        })
+                                    DropdownMenuItem(
+                                        text = { Text("Edit term") },
+                                        onClick = {
+                                            navController.navigate(
+                                                Screen.TermManagement.passId(
+                                                    studySet.id
+                                                )
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.Outlined.EditNote,
                                                 contentDescription = null
                                             )
                                         })
@@ -262,6 +272,9 @@ fun DetailScreen(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(5.dp),
+                            modifier = Modifier.clickable {
+                                navController.navigate(Screen.Profile.passId(studySet.owner.id))
+                            }
                         ) {
                             CircleAvatar(
                                 avatarImg = studySet.owner.imageUrl,
@@ -372,46 +385,53 @@ fun DetailScreen(
 
         }
 
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceAround,
+        if (!(studySet.permission == NONE_ACCESS_LEVEL && studySet.accessType != PUBLIC_ACCESS)) {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = MaterialTheme.colorScheme.primary)
-                    .padding(top = 5.dp)
-
             ) {
-                SetMenuItem(imageId = R.drawable.flash_card, label = "Flash card", onClick = {
-                    onClickStudy()
-                })
-                SetMenuItem(imageId = R.drawable.game_console, label = "Game", onClick = {
-                    navController.navigate(Screen.MatchGame.passId(studySet.id))
-                })
-                SetMenuItem(imageId = R.drawable.study, label = "Learn", onClick = {
-                    navController.navigate(Screen.Exam.passId(studySet.id))
-                })
-                SetMenuItem(imageId = R.drawable.exam, label = "Exam", onClick = {
-                    openExamListDialog = true
-                })
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = MaterialTheme.colorScheme.primary)
+                        .padding(top = 5.dp)
+
+                ) {
+                    SetMenuItem(imageId = R.drawable.flash_card, label = "Flash card", onClick = {
+                        onClickStudy()
+                    }, enable = studySet.terms.isNotEmpty())
+                    SetMenuItem(imageId = R.drawable.game_console, label = "Game", onClick = {
+                        navController.navigate(Screen.MatchGame.passId(studySet.id))
+                    }, enable = studySet.terms.size > 3)
+                    SetMenuItem(imageId = R.drawable.study, label = "Learn", onClick = {
+                        navController.navigate(Screen.Exam.passId(studySet.id))
+                    }, enable = studySet.terms.size > 3)
+                    SetMenuItem(imageId = R.drawable.exam, label = "Exam", onClick = {
+                        openExamListDialog = true
+                    })
+                }
             }
         }
-
-
     }
 }
 
 @Composable
-fun SetMenuItem(@DrawableRes imageId: Int, label: String, onClick: () -> Unit) {
+fun SetMenuItem(
+    @DrawableRes imageId: Int,
+    label: String,
+    onClick: () -> Unit,
+    enable: Boolean = true
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable {
-            onClick()
+            if (enable) {
+                onClick()
+            }
         }
     ) {
         Image(
@@ -422,167 +442,11 @@ fun SetMenuItem(@DrawableRes imageId: Int, label: String, onClick: () -> Unit) {
         Text(
             text = label,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onPrimary
+            color = if (enable) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.outlineVariant
         )
     }
 }
 
-
-@Composable
-fun AddTermDialog(
-    onDismissRequest: () -> Unit,
-    studySet: StudySetDetail,
-    onAddedTerm: () -> Unit
-) {
-    val term = remember { mutableStateOf("") }
-    val definition = remember { mutableStateOf("") }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    val context = LocalContext.current
-    val bitmap = remember { mutableStateOf<Bitmap?>(null) }
-
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-            imageUri = uri
-        }
-
-    val scope = rememberCoroutineScope()
-    val addTermViewModel = hiltViewModel<AddTermViewModel>()
-    val addTermResponse by addTermViewModel.addTermResponse.collectAsState()
-
-
-    LaunchedEffect(key1 = addTermResponse is ResponseHandlerState.Success) {
-        scope.launch {
-            if (addTermResponse is ResponseHandlerState.Success) {
-                Toast.makeText(context, "Add term successful", Toast.LENGTH_LONG).show()
-                addTermViewModel.resetState()
-                onDismissRequest()
-                onAddedTerm()
-            }
-        }
-    }
-
-    LaunchedEffect(key1 = addTermResponse is ResponseHandlerState.Error) {
-        if (addTermResponse is ResponseHandlerState.Error) {
-            scope.launch {
-                Toast.makeText(
-                    context,
-                    (addTermResponse as ResponseHandlerState.Error).errorMsg,
-                    Toast.LENGTH_LONG
-                ).show()
-                addTermViewModel.resetState()
-            }
-        }
-    }
-    Dialog(
-        onDismissRequest = { onDismissRequest() },
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Text(text = "Add term", style = MaterialTheme.typography.titleLarge)
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                if (imageUri != null) {
-                    imageUri?.let {
-                        if (Build.VERSION.SDK_INT < 28) {
-                            bitmap.value = MediaStore.Images
-                                .Media.getBitmap(context.contentResolver, it)
-                        } else {
-                            val source = ImageDecoder.createSource(context.contentResolver, it)
-                            bitmap.value = ImageDecoder.decodeBitmap(source)
-                        }
-
-                        bitmap.value?.let { btm ->
-                            Image(
-                                bitmap = btm.asImageBitmap(),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(250.dp)
-                                    .clip(RoundedCornerShape(15.dp))
-                                    .border(
-                                        2.dp, MaterialTheme.colorScheme.outlineVariant,
-                                        RoundedCornerShape(15.dp)
-                                    )
-                                    .clickable {
-                                        launcher.launch("image/*")
-                                    },
-                            )
-                        }
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .border(
-                                2.dp, MaterialTheme.colorScheme.outlineVariant,
-                                RoundedCornerShape(15.dp)
-                            )
-                            .clickable {
-                                launcher.launch("image/*")
-                            },
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(imageVector = Icons.Outlined.Upload, contentDescription = null)
-                        Text(text = "Pick Image")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-
-                CustomTextField(value = term.value, onValueChange = { term.value = it },
-                    label = { Text(text = "Term") },
-                    placeholder = { Text(text = "Term") })
-                CustomTextField(value = definition.value,
-                    onValueChange = { definition.value = it },
-                    label = { Text(text = "Definition") },
-                    placeholder = { Text(text = "Definition") })
-
-
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                Button(onClick = { onDismissRequest() }) {
-                    Text(text = "Cancel")
-                }
-                Button(
-                    onClick = {
-                        val inputStream = context.contentResolver.openInputStream(imageUri!!)
-                        val file = File(context.cacheDir, "mage.png")
-                        file.createNewFile()
-                        file.outputStream().use {
-                            inputStream!!.copyTo(it)
-                        }
-                        addTermViewModel.createSet(file, term.value, definition.value, studySet.id)
-                    },
-                    enabled = imageUri != null && term.value.isNotEmpty() && definition.value.isNotEmpty() || addTermResponse is ResponseHandlerState.Loading
-                ) {
-                    Text(text = "Add")
-                }
-            }
-        }
-
-    }
+fun isEditPermission(permission: Int): Boolean {
+    return permission == EDIT_ACCESS_LEVEL || permission == OWNER_ACCESS_LEVEL
 }

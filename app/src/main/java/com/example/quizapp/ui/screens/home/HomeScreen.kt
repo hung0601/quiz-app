@@ -17,6 +17,7 @@ package com.example.quizapp.ui.screens.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
@@ -186,11 +187,6 @@ fun TopCreatesList(
                 .padding(start = 20.dp, end = 20.dp),
         ) {
             Text(text = "Top Creators", style = MaterialTheme.typography.titleLarge)
-            Text(
-                text = "View all",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
         }
         LazyRow(
             state = lazyListState,
@@ -309,7 +305,10 @@ fun CourseList(
             Text(
                 text = "View all",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable {
+                    navController.navigate(Screen.Library.passTabId(1))
+                }
             )
         }
         LazyRow(
@@ -422,7 +421,10 @@ fun StudySetList(
             Text(
                 text = "View all",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable {
+                    navController.navigate(Screen.Library.route)
+                }
             )
         }
         LazyRow(

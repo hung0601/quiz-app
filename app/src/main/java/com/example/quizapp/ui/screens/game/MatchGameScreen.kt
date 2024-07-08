@@ -1,5 +1,7 @@
 package com.example.quizapp.ui.screens.game
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,19 +21,28 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.quizapp.R
 import com.example.quizapp.model.StudySetDetail
+import com.example.quizapp.ui.components.basic.button.CustomButton
 import com.example.quizapp.ui.components.basic.card.CustomCard
 import com.example.quizapp.ui.navigation.Screen
+import kotlinx.coroutines.delay
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun MatchGameScreen(
     navController: NavController,
@@ -42,6 +53,16 @@ fun MatchGameScreen(
             factory.create(studySet)
         }
     val uiState by matchGameModel.uiState.collectAsState()
+    var timeLeft by remember { mutableFloatStateOf(0F) }
+
+    LaunchedEffect(key1 = timeLeft, block = {
+        if (uiState.step == 1) {
+            delay(100L)
+            timeLeft += 0.1F
+        } else {
+
+        }
+    })
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +86,7 @@ fun MatchGameScreen(
                     Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
                 }
                 Text(
-                    text = "5.2s",
+                    text = String.format("%.1f", timeLeft) + "s",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -81,14 +102,72 @@ fun MatchGameScreen(
             }
 
         }
+        if (uiState.step == 1) {
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                CardsGrid(cards = uiState.cards, matchGameModel = matchGameModel)
+            }
+        } else {
+            EndGameScreen(
+                navController = navController,
+                gameModel = matchGameModel,
+                result = timeLeft,
+                onTryAgain = { timeLeft = 0F }
+            )
+        }
+    }
+}
+
+@SuppressLint("DefaultLocale")
+@Composable
+fun EndGameScreen(
+    navController: NavController,
+    gameModel: MatchGameModel,
+    result: Float,
+    onTryAgain: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.complete),
+            contentDescription = null,
+            modifier = Modifier.height(80.dp)
+        )
+        Text(
+            text = "You have completed the game.",
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = "${String.format("%.1f", result)}s",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 10.dp)
+        )
         Row(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxSize(),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.padding(top = 10.dp)
         ) {
-            CardsGrid(cards = uiState.cards, matchGameModel = matchGameModel)
+            CustomButton(onClick = {
+                navController.navigateUp()
+            }) {
+                Text(text = "Exit", color = Color.White)
+            }
+            CustomButton(onClick = {
+                onTryAgain()
+                gameModel.reset()
+            }) {
+                Text(text = "Try again", color = Color.White)
+            }
         }
     }
 }

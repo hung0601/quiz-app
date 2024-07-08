@@ -1,4 +1,4 @@
-package com.example.quizapp.ui.screens.set_detail.create
+package com.example.quizapp.ui.screens.set_detail.edit
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -17,9 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
-class CreateSetViewModel @Inject constructor(
+class EditSetViewModel @Inject constructor(
     private val quizApiRepository: QuizApiRepository,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -32,18 +31,17 @@ class CreateSetViewModel @Inject constructor(
     val topics: StateFlow<List<Topic>> = _topics.asStateFlow()
 
 
-    private val courseId: Int = checkNotNull(savedStateHandle.get<Int>("courseId"))
+    private val setId: Int = checkNotNull(savedStateHandle.get<Int>("id"))
     fun resetState() {
         _setResponse.value = ResponseHandlerState.Init
     }
 
-    fun createSet(
+    fun updateSet(
         formData: StoreStudySetRequest
     ) {
         viewModelScope.launch {
             _setResponse.value = ResponseHandlerState.Loading
-            formData.courseId = if (courseId > 0) courseId else null
-            val response = quizApiRepository.createSet(formData)
+            val response = quizApiRepository.updateSet(setId, formData)
             _setResponse.value = handleResponseState(response)
         }
     }

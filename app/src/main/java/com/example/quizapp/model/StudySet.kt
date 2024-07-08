@@ -36,12 +36,11 @@ data class StudySet(
     val accessType: Int = PUBLIC_ACCESS,
     @SerialName(value = "votes_avg_star")
     val votesAvgStar: Float? = null,
-    val topics: List<Topic>,
+    val topics: List<Topic> = emptyList(),
     @SerialName(value = "image_url")
     val imageUrl: String? = null,
     @SerialName(value = "created_at")
     val createdAt: String?,
     @SerialName(value = "updated_at")
     val updatedAt: String?
-
 )
