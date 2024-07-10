@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material3.Button
@@ -65,7 +67,10 @@ fun EditSetScreen(
     navController: NavController,
     studySetDetail: StudySetDetail
 ) {
-    val updateSetViewModel = hiltViewModel<EditSetViewModel>()
+    val updateSetViewModel =
+        hiltViewModel<EditSetViewModel, EditSetViewModel.EditSetViewModelFactory> { factory ->
+            factory.create(studySetDetail)
+        }
     val setResponse by updateSetViewModel.setResponse.collectAsState()
     val title = remember { mutableStateOf(studySetDetail.title) }
     val description = remember { mutableStateOf(studySetDetail.description) }
@@ -126,7 +131,8 @@ fun EditSetScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
+            .padding(20.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

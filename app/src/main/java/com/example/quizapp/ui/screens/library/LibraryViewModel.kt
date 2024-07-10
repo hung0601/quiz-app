@@ -30,9 +30,21 @@ class LibraryViewModel @Inject constructor(
 
     val tabId: Int = checkNotNull(savedStateHandle.get<Int>("tabId"))
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         getCourseList()
         getStudySetList()
+    }
+
+    fun fetchData() {
+        if (!_isLoading.value) {
+            _isLoading.value = true
+            getCourseList()
+            getStudySetList()
+            _isLoading.value = false
+        }
     }
 
     fun getStudySetList() {

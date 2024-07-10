@@ -49,6 +49,9 @@ class CreatorProfileViewModel @Inject constructor(
 
     val currentUser = sessionCache.getActiveSession()?.user
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         fetchData()
     }
@@ -67,6 +70,22 @@ class CreatorProfileViewModel @Inject constructor(
         }
     }
 
+    fun refreshData() {
+        viewModelScope.launch {
+            if (!_isLoading.value) {
+                _isLoading.value = true
+                val studySetResponse = async { quizApiRepository.getSetsByUser(userId) }
+                val courseResponse = async { quizApiRepository.getCoursesByUser(userId) }
+                val followersResponse = async { quizApiRepository.getFollowers(userId) }
+
+                _studySets.value = handleResponseState(studySetResponse.await())
+                _courses.value = handleResponseState(courseResponse.await())
+                _followers.value = handleResponseState(followersResponse.await())
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun follow(userId: Int) {
         viewModelScope.launch {
             val followRes = async { quizApiRepository.followUser(userId) }
@@ -75,7 +94,8 @@ class CreatorProfileViewModel @Inject constructor(
                 _userProfile.update { currentUser ->
                     ResponseHandlerState.Success(
                         (currentUser as ResponseHandlerState.Success<CreatorProfile>).data.copy(
-                            isFollowing = true
+                            isFollowing = true,
+                            followersCount = (currentUser.data.followersCount ?: 0) + 1,
                         )
                     )
                 }
@@ -91,7 +111,8 @@ class CreatorProfileViewModel @Inject constructor(
                 _userProfile.update { currentUser ->
                     ResponseHandlerState.Success(
                         (currentUser as ResponseHandlerState.Success<CreatorProfile>).data.copy(
-                            isFollowing = false
+                            isFollowing = false,
+                            followersCount = (currentUser.data.followersCount ?: 0) - 1,
                         )
                     )
                 }

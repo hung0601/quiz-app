@@ -36,12 +36,16 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.Class
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.School
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -80,6 +84,7 @@ import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen
 import com.example.quizapp.ui.theme.quizappTheme
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
     navController: NavHostController = rememberNavController(),
@@ -90,79 +95,102 @@ fun HomeScreen(
     val creatorList by homeViewModel.creatorList.collectAsState()
     val inviteList by homeViewModel.inviteList.collectAsState()
     val listState = rememberLazyListState()
+
+    val isLoading by homeViewModel.isLoading.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isLoading,
+        onRefresh = homeViewModel::fetchData
+    )
+
     val isScrolledOnTop by remember {
         derivedStateOf { listState.firstVisibleItemScrollOffset == 0 }
     }
 
-    Column {
-        HomeTopBar(
-            isScrolledOnTop,
-            inviteList,
-            onOpenNotification = { navController.navigate(Screen.Notification.route) })
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    ) {
         LazyColumn(
-            state = listState,
             modifier = Modifier
-                .fillMaxWidth()
-                .background(color = MaterialTheme.colorScheme.surface)
+                .fillMaxSize()
         ) {
             item {
-                when (studySetList) {
-                    is ResponseHandlerState.Success -> {
-                        StudySetList(
-                            navController,
-                            (studySetList as ResponseHandlerState.Success<List<StudySet>>).data
-                        )
-                    }
-
-                    is ResponseHandlerState.Loading -> {
-                        LoadingScreen()
-                    }
-
-                    else -> {
-                        ErrorScreen()
-                    }
-
-                }
+                HomeTopBar(
+                    isScrolledOnTop,
+                    inviteList,
+                    onOpenNotification = { navController.navigate(Screen.Notification.route) })
             }
             item {
-                when (courseList) {
-                    is ResponseHandlerState.Success -> {
-                        CourseList(
-                            navController,
-                            (courseList as ResponseHandlerState.Success<List<Course>>).data
-                        )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = MaterialTheme.colorScheme.surface)
+                ) {
+
+                    when (studySetList) {
+                        is ResponseHandlerState.Success -> {
+                            StudySetList(
+                                navController,
+                                (studySetList as ResponseHandlerState.Success<List<StudySet>>).data
+                            )
+                        }
+
+                        is ResponseHandlerState.Loading -> {
+                            LoadingScreen()
+                        }
+
+                        else -> {
+                            ErrorScreen()
+                        }
+
                     }
 
-                    is ResponseHandlerState.Loading -> {
-                        LoadingScreen()
+                    when (courseList) {
+                        is ResponseHandlerState.Success -> {
+                            CourseList(
+                                navController,
+                                (courseList as ResponseHandlerState.Success<List<Course>>).data
+                            )
+                        }
+
+                        is ResponseHandlerState.Loading -> {
+                            LoadingScreen()
+                        }
+
+                        else -> {
+                            ErrorScreen()
+                        }
+
                     }
 
-                    else -> {
-                        ErrorScreen()
-                    }
+                    when (creatorList) {
+                        is ResponseHandlerState.Success -> {
+                            TopCreatesList(
+                                navController,
+                                (creatorList as ResponseHandlerState.Success<List<MyProfile>>).data
+                            )
+                        }
 
-                }
-            }
-            item {
-                when (creatorList) {
-                    is ResponseHandlerState.Success -> {
-                        TopCreatesList(
-                            navController,
-                            (creatorList as ResponseHandlerState.Success<List<MyProfile>>).data
-                        )
-                    }
+                        is ResponseHandlerState.Loading -> {
+                            LoadingScreen()
+                        }
 
-                    is ResponseHandlerState.Loading -> {
-                        LoadingScreen()
-                    }
+                        else -> {
+                            ErrorScreen()
+                        }
 
-                    else -> {
-                        ErrorScreen()
                     }
 
                 }
             }
         }
+
+        PullRefreshIndicator(
+            refreshing = isLoading,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 

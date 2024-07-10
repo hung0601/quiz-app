@@ -16,11 +16,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.GroupAdd
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -40,6 +44,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.quizapp.model.CourseDetail
@@ -63,27 +69,52 @@ import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CourseDetailScreen(navController: NavController) {
     val courseViewModel = hiltViewModel<CourseViewModel>()
     val courseDetail by courseViewModel.courseDetail.collectAsState()
-    when (courseDetail) {
-        is ResponseHandlerState.Success -> {
-            CourseDetail(
-                navController = navController,
-                course = (courseDetail as ResponseHandlerState.Success<CourseDetail>).data,
-                courseViewModel = courseViewModel
-            )
-        }
 
-        is ResponseHandlerState.Loading -> {
-            LoadingScreen()
-        }
+    val isLoading by courseViewModel.isLoading.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isLoading,
+        onRefresh = courseViewModel::fetchData
+    )
 
-        else -> {
-            ErrorScreen()
-        }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    ) {
+        PullRefreshIndicator(
+            refreshing = isLoading,
+            state = pullRefreshState,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 50.dp)
+                .zIndex(1000f),
+        )
+        Column(modifier = Modifier.fillMaxSize()) {
 
+            when (courseDetail) {
+                is ResponseHandlerState.Success -> {
+                    CourseDetail(
+                        navController = navController,
+                        course = (courseDetail as ResponseHandlerState.Success<CourseDetail>).data,
+                        courseViewModel = courseViewModel
+                    )
+                }
+
+                is ResponseHandlerState.Loading -> {
+                    LoadingScreen()
+                }
+
+                else -> {
+                    ErrorScreen()
+                }
+
+            }
+        }
     }
 }
 
@@ -93,7 +124,7 @@ fun CourseDetail(
     course: CourseDetail,
     courseViewModel: CourseViewModel
 ) {
-    var tabIndex by remember { mutableIntStateOf(0) }
+    var tabIndex by rememberSaveable { mutableIntStateOf(0) }
     val tabs = listOf("Study Sets", "Members")
     var expanded by remember { mutableStateOf(false) }
     var openAddsetDialog by remember { mutableStateOf(false) }

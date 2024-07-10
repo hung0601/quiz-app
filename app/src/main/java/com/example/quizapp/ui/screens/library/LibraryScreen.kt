@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,83 +42,104 @@ import com.example.quizapp.ui.navigation.Screen
 import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun LibraryScreen(navController: NavController) {
     val libraryViewModel = hiltViewModel<LibraryViewModel>()
     val studySetList by libraryViewModel.studySetList.collectAsState()
     val courseList by libraryViewModel.courseList.collectAsState()
     var tabIndex by remember { mutableStateOf(libraryViewModel.tabId) }
+
+    val isLoading by libraryViewModel.isLoading.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isLoading,
+        onRefresh = libraryViewModel::fetchData
+    )
+
     val tabs = listOf("Study sets", "Courses")
-    Column(
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface)
-            .padding(10.dp)
+            .pullRefresh(pullRefreshState)
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.surface)
+                .padding(10.dp)
         ) {
-            Text(
-                text = "Library", style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.align(Alignment.Center)
-            )
-            IconButton(onClick = {
-                if (tabIndex == 0) {
-                    navController.navigate(Screen.CreateStudySet.route)
-                } else navController.navigate(Screen.CreateCourse.route)
-            }, modifier = Modifier.align(Alignment.CenterEnd)) {
-                Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
-            }
-        }
-        TabRow(selectedTabIndex = tabIndex) {
-            tabs.forEachIndexed { index, title ->
-                Tab(text = { Text(title) },
-                    selected = tabIndex == index,
-                    onClick = { tabIndex = index }
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Library", style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.align(Alignment.Center)
                 )
-            }
-        }
-        when (tabIndex) {
-            0 -> {
-                when (studySetList) {
-                    is ResponseHandlerState.Success -> {
-                        StudySetList(
-                            navController = navController,
-                            studySetList = (studySetList as ResponseHandlerState.Success<List<StudySet>>).data
-                        )
-                    }
-
-                    is ResponseHandlerState.Loading -> {
-                        LoadingScreen()
-                    }
-
-                    else -> {
-                        ErrorScreen()
-                    }
-
+                IconButton(onClick = {
+                    if (tabIndex == 0) {
+                        navController.navigate(Screen.CreateStudySet.route)
+                    } else navController.navigate(Screen.CreateCourse.route)
+                }, modifier = Modifier.align(Alignment.CenterEnd)) {
+                    Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
                 }
             }
+            TabRow(selectedTabIndex = tabIndex) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(text = { Text(title) },
+                        selected = tabIndex == index,
+                        onClick = { tabIndex = index }
+                    )
+                }
+            }
+            when (tabIndex) {
+                0 -> {
+                    when (studySetList) {
+                        is ResponseHandlerState.Success -> {
+                            StudySetList(
+                                navController = navController,
+                                studySetList = (studySetList as ResponseHandlerState.Success<List<StudySet>>).data
+                            )
+                        }
 
-            1 -> {
-                when (courseList) {
-                    is ResponseHandlerState.Success -> {
-                        CourseList(
-                            navController,
-                            (courseList as ResponseHandlerState.Success<List<Course>>).data
-                        )
+                        is ResponseHandlerState.Loading -> {
+                            LoadingScreen()
+                        }
+
+                        else -> {
+                            ErrorScreen()
+                        }
+
                     }
+                }
 
-                    is ResponseHandlerState.Loading -> {
-                        LoadingScreen()
+                1 -> {
+                    when (courseList) {
+                        is ResponseHandlerState.Success -> {
+                            CourseList(
+                                navController,
+                                (courseList as ResponseHandlerState.Success<List<Course>>).data
+                            )
+                        }
+
+                        is ResponseHandlerState.Loading -> {
+                            LoadingScreen()
+                        }
+
+                        else -> {
+                            ErrorScreen()
+                        }
+
                     }
-
-                    else -> {
-                        ErrorScreen()
-                    }
-
                 }
             }
         }
+
+        PullRefreshIndicator(
+            refreshing = isLoading,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 

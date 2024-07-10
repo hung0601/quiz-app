@@ -16,6 +16,8 @@ data class CreatorProfile(
     val studySetsCount: Int? = 0,
     @SerialName(value = "followers_count")
     val followersCount: Int? = 0,
+    @SerialName(value = "followings_count")
+    val followingsCount: Int? = 0,
     @SerialName(value = "is_following")
     val isFollowing: Boolean = false,
     @SerialName(value = "created_at")

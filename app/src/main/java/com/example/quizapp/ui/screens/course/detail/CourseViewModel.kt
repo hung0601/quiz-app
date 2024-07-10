@@ -29,8 +29,19 @@ class CourseViewModel @Inject constructor(
 
     val currentUser = sessionCache.getActiveSession()?.user
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         getCourse()
+    }
+
+    fun fetchData() {
+        if (!_isLoading.value) {
+            _isLoading.value = true
+            getCourse()
+            _isLoading.value = false
+        }
     }
 
     fun getCourse() {

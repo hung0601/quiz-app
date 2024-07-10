@@ -37,12 +37,25 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow<ResponseHandlerState<List<CourseInvite>>>(ResponseHandlerState.Loading)
     val inviteList: StateFlow<ResponseHandlerState<List<CourseInvite>>> = _inviteList.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     init {
         getCourseList()
         getStudySetList()
         getCreatorList()
         getInvites()
+    }
+
+    fun fetchData() {
+        if (!_isLoading.value) {
+            _isLoading.value = true
+            getCourseList()
+            getStudySetList()
+            getCreatorList()
+            getInvites()
+            _isLoading.value = false
+        }
     }
 
 

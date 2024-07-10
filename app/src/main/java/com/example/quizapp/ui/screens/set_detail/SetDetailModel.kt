@@ -11,6 +11,7 @@ import com.example.quizapp.model.StudySetDetail
 import com.example.quizapp.network.QuizApiRepository
 import com.example.quizapp.network.response_model.ApiResponse
 import com.example.quizapp.network.response_model.ResponseHandlerState
+import com.example.quizapp.utils.handleResponseState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,8 +43,19 @@ class SetDetailModel @Inject constructor(
     val voteResponse: StateFlow<ResponseHandlerState<Float>> =
         _voteResponse.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         getStudySet()
+    }
+
+    fun fetchData() {
+        if (!_isLoading.value) {
+            _isLoading.value = true
+            getStudySet()
+            _isLoading.value = false
+        }
     }
 
     fun updateVote(star: Float) {
@@ -57,19 +69,7 @@ class SetDetailModel @Inject constructor(
         viewModelScope.launch {
             _voteResponse.value = ResponseHandlerState.Loading
             val response = quizApiRepository.voteSet(studySetId = itemId, star = star)
-            _voteResponse.value = when (response) {
-                is ApiResponse.Success -> {
-                    ResponseHandlerState.Success(response.data)
-                }
-
-                is ApiResponse.Error -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-
-                is ApiResponse.Exception -> {
-                    ResponseHandlerState.Error(response.errorMsg)
-                }
-            }
+            _voteResponse.value = handleResponseState(response)
         }
     }
 

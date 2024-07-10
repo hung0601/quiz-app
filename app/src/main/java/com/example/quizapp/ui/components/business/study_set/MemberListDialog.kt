@@ -61,6 +61,7 @@ fun MemberListDialog(
     onDismissRequest: () -> Unit,
     studySetDetail: StudySetDetail,
     navController: NavController,
+    isOwner: Boolean = false,
 ) {
     val memberViewModel = hiltViewModel<MemberViewModel>()
     val memberList by memberViewModel.memberList.collectAsState()
@@ -153,8 +154,13 @@ fun MemberListDialog(
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(end = 10.dp)
                         )
-                        IconButton(onClick = { isSearch.value = true }) {
-                            Icon(imageVector = Icons.Outlined.PersonAdd, contentDescription = null)
+                        if (isOwner) {
+                            IconButton(onClick = { isSearch.value = true }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.PersonAdd,
+                                    contentDescription = null
+                                )
+                            }
                         }
                     }
                     when (memberList) {
@@ -163,6 +169,7 @@ fun MemberListDialog(
                                 navController = navController,
                                 members = (memberList as ResponseHandlerState.Success<List<Member>>).data,
                                 memberViewModel,
+                                isOwner = isOwner
                             )
                         }
 
@@ -205,6 +212,7 @@ fun StudySetMemberList(
     navController: NavController,
     members: List<Member>,
     memberViewModel: MemberViewModel,
+    isOwner: Boolean = false,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(top = 10.dp),
@@ -233,14 +241,16 @@ fun StudySetMemberList(
                             Icon(imageVector = Icons.Outlined.EditNote, contentDescription = null)
                         }
                     }
-                    IconButton(
-                        onClick = { memberViewModel.deleteMember(it.id) },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.DeleteOutline,
-                            contentDescription = null,
-                            tint = md_theme_error
-                        )
+                    if (isOwner) {
+                        IconButton(
+                            onClick = { memberViewModel.deleteMember(it.id) },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.DeleteOutline,
+                                contentDescription = null,
+                                tint = md_theme_error
+                            )
+                        }
                     }
                 }
             }

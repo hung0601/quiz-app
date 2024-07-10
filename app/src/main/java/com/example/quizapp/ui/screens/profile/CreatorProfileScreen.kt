@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.quizapp.R
@@ -48,26 +54,46 @@ import com.example.quizapp.ui.screens.hooks.ErrorScreen
 import com.example.quizapp.ui.screens.hooks.LoadingScreen
 import com.example.quizapp.ui.screens.library.CourseList
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CreatorProfileScreen(navController: NavController) {
     val profileViewModel = hiltViewModel<CreatorProfileViewModel>()
-
     val userProfile by profileViewModel.userProfile.collectAsState()
-    when (userProfile) {
-        is ResponseHandlerState.Success -> {
-            CreatorProfileDetail(
-                profileViewModel = profileViewModel,
-                navController = navController,
-                userProfile = (userProfile as ResponseHandlerState.Success<CreatorProfile>).data
-            )
-        }
 
-        is ResponseHandlerState.Loading -> {
-            LoadingScreen()
-        }
+    val isLoading by profileViewModel.isLoading.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isLoading,
+        onRefresh = profileViewModel::refreshData
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(pullRefreshState)
+    ) {
+        PullRefreshIndicator(
+            refreshing = isLoading,
+            state = pullRefreshState,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .zIndex(1000f)
+        )
 
-        else -> {
-            ErrorScreen()
+        when (userProfile) {
+            is ResponseHandlerState.Success -> {
+                CreatorProfileDetail(
+                    profileViewModel = profileViewModel,
+                    navController = navController,
+                    userProfile = (userProfile as ResponseHandlerState.Success<CreatorProfile>).data
+                )
+            }
+
+            is ResponseHandlerState.Loading -> {
+                LoadingScreen()
+            }
+
+            else -> {
+                ErrorScreen()
+            }
         }
     }
 }
@@ -169,7 +195,10 @@ fun CreatorProfileDetail(
                 Text(text = "Followers", color = subTextColor)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "123", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = userProfile.followingsCount.toString(),
+                    style = MaterialTheme.typography.titleMedium
+                )
                 Text(text = "Following", color = subTextColor)
             }
         }
